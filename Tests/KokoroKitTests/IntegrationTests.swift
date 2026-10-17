@@ -40,20 +40,22 @@ func allVoicesAndLongTextProduceAudio() async throws {
     #expect(phonemes.unicodeScalars.count > 128)
     #expect(phonemes.unicodeScalars.count <= 510)
     for speed: Float in [0.5, 1, 2] {
-        try autoreleasepool {
-            let output = try model.forward(phonemes: phonemes, refS: pack.style(phonemeCount: phonemes.unicodeScalars.count), speed: speed)
+        try autoreleasepool { () throws -> Void in
+            let style = try pack.style(phonemeCount: phonemes.unicodeScalars.count)
+            let output: SegmentOutput = try model.forward(phonemes: phonemes, refS: style, speed: speed)
             #expect(output.predDur.count == phonemes.unicodeScalars.count + 2)
             #expect(output.decoderWindows > 1)
             #expect(output.maximumDecoderFrames <= 160)
             #expect(output.audio.count > 24_000 * 4)
             #expect(output.audio.allSatisfy { $0.isFinite && abs($0) <= 1 })
-            let expected = output.predDur.reduce(0, +) * 600
-                - max(0, (output.predDur.first ?? 0) * 600 - 960)
-                - max(0, (output.predDur.last ?? 0) * 600 - 960)
+            let totalSamples: Int = output.predDur.reduce(0, +) * 600
+            let leading: Int = max(0, (output.predDur.first ?? 0) * 600 - 960)
+            let trailing: Int = max(0, (output.predDur.last ?? 0) * 600 - 960)
+            let expected = totalSamples - leading - trailing
             #expect(output.audio.count == expected)
         }
     }
-    try autoreleasepool {
+    try autoreleasepool { () throws -> Void in
         let limit = DynamicCoreMLModel.maxPhonemeCount
         let atLimit = String(String.UnicodeScalarView(String(repeating: "wɜːd ", count: limit).unicodeScalars.prefix(limit)))
         let style = try pack.style(phonemeCount: limit)

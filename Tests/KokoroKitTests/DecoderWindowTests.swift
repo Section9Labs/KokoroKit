@@ -43,7 +43,8 @@ import Testing
     }
     var result: [Float] = [0, 0, 0, 0]
     DecoderWindow.append([1, 1, 1, 1], at: 2, to: &result)
-    #expect(result == [0, 0, 1.0 / 3, 2.0 / 3, 1, 1])
+    let expected: [Float] = [0, 0, Float(1) / 3, Float(2) / 3, 1, 1]
+    #expect(result == expected)
 }
 
 @Test(arguments: [1, 2])
