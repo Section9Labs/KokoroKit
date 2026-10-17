@@ -1,0 +1,9 @@
+french-ipa.tsv is derived from open-dict-data/ipa-dict data/fr_FR.txt,
+revision 43c3570eb3553bdd19fccd2bd0091534889af023.
+https://github.com/open-dict-data/ipa-dict
+Copyright (c) 2016 dohliam. MIT license: see IPA-DICT-LICENSE.txt.
+Upstream declares French MIT and globally credits Aspell reference wordlists.
+Underlying provenance has not been independently audited.
+Derived form: lowercase NFC single-word keys, first pronunciations, canonical
+IPA g/affricates, stripped delimiters/syllable dots/stress, UTF-8 sort.
+See docs/ROMANCE.md for complete transformation and content checksums.

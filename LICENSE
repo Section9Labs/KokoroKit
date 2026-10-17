@@ -1,0 +1,16 @@
+KokoroKit — original Section9Labs contributions
+Copyright (c) 2026 Section9Labs and contributors
+
+Except for the third-party components identified in THIRD_PARTY_NOTICES.md,
+original contributions in this repository are available, at your option, under:
+
+  Apache License, Version 2.0 (LICENSE-APACHE), OR
+  MIT License (LICENSE-MIT).
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+
+This choice applies only to original Section9Labs contributions. It does not
+relicense upstream code, dictionaries, model vocabulary, model weights, or
+voice embeddings. Reused Apache-2.0 code remains Apache-2.0; MIT data retains
+its original MIT notice. Redistributors must preserve the applicable notices
+and comply with the licenses of every included component.

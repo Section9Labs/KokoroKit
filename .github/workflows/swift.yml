@@ -1,0 +1,24 @@
+name: Swift
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Debug tests
+        run: swift test
+      - name: Release tests
+        run: swift test -c release
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate iOS example
+        working-directory: Examples/KokoroDemo
+        run: xcodegen generate
+      - name: Build iOS example
+        run: >-
+          xcodebuild -project Examples/KokoroDemo/KokoroDemo.xcodeproj
+          -scheme KokoroDemo -configuration Release
+          -destination 'generic/platform=iOS'
+          -derivedDataPath /tmp/kokoro-ci CODE_SIGNING_ALLOWED=NO build

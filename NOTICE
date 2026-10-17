@@ -1,0 +1,12 @@
+KokoroKit
+Copyright (c) 2026 Section9Labs and contributors
+
+This distribution includes attributed components from kokoro-swift, Misaki,
+speech-swift, ipa-dict, and Kokoro. Core ML integration also acknowledges
+Jud/kokoro-coreml. See THIRD_PARTY_NOTICES.md and Licenses/ for authors,
+revisions, modifications, full terms and model/data acknowledgements.
+
+The independent pronunciation rules are original implementations, not a port
+of eSpeak. No eSpeak implementation, rule tables or benchmark environment is
+bundled. Apple linguistic facilities are system dependencies, not redistributed
+Apple dictionaries. No endorsement by upstream authors is implied.

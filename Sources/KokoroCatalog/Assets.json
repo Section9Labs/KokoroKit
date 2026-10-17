@@ -1,0 +1,399 @@
+{
+  "repository": "mrbrutti/librox",
+  "revision": "kokoro-coreml-2026-10-15",
+  "files": [
+    {
+      "path": "kokoro-models.tar.gz",
+      "size": 499340346,
+      "sha256": "df5b03d31d85aeda0d2624f26e4044cc6625e9002058072c0829eb7be1149730",
+      "sourceURL": "https://github.com/mrbrutti/librox/releases/download/kokoro-coreml-2026-10-15/kokoro-models.tar.gz"
+    }
+  ],
+  "installedFiles": [
+    {
+      "path": "LICENSE.txt",
+      "size": 10763,
+      "sha256": "8b86cbde30daef6bfac0780dee1649be3b2de2abf4ecdefd5b7099df212c5a1d"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "size": 5029,
+      "sha256": "3eb43cb8cf25c0aec4bb7610146212288b81a281f3404a5aa2d740f1a3c0a3bc"
+    },
+    {
+      "path": "decoder/decoder-manifest.json",
+      "size": 2465,
+      "sha256": "733e7ce8d3e7acb3e3ba8707ee08197a80d79c75470aebc80462b7a8072cbd1b"
+    },
+    {
+      "path": "decoder/fixed160.mlmodelc/analytics/coremldata.bin",
+      "size": 243,
+      "sha256": "d2cbf3dc182ca05717fb2640849aad3356b5c6241d3ea5e3a3e7bbc8917ef791"
+    },
+    {
+      "path": "decoder/fixed160.mlmodelc/coremldata.bin",
+      "size": 467,
+      "sha256": "d6ac883396ddd3abb726a1c757e434bc19072b814b33cb759bfc5f960a88e74c"
+    },
+    {
+      "path": "decoder/fixed160.mlmodelc/metadata.json",
+      "size": 3366,
+      "sha256": "38eb6759df1e1e8fcded34bb93962846ff0b4866468667fd803eabdcc74df515"
+    },
+    {
+      "path": "decoder/fixed160.mlmodelc/model.mil",
+      "size": 336001,
+      "sha256": "f311a7c09c48864ffabf2547726b05ad8a44546da34fe892cd74328590c414f6"
+    },
+    {
+      "path": "decoder/fixed160.mlmodelc/weights/weight.bin",
+      "size": 213095504,
+      "sha256": "d2f38094a97fd683c6f6da9aa36ee5c16e4ee937f4e4b065ef5d0eb35c354c88"
+    },
+    {
+      "path": "decoder/short.mlmodelc/analytics/coremldata.bin",
+      "size": 243,
+      "sha256": "62a77f436b80e184e1ba0d4e0e85e4477f5850e717669510631b695100b8ebcd"
+    },
+    {
+      "path": "decoder/short.mlmodelc/coremldata.bin",
+      "size": 538,
+      "sha256": "3231a12f84ab2b1d11824618c4028197d895d2176d5ed997247ece711ed1947b"
+    },
+    {
+      "path": "decoder/short.mlmodelc/metadata.json",
+      "size": 3736,
+      "sha256": "30d4da4068657784e581bdc6a3378f329d84e621d5a97932c22d51822ed72eb4"
+    },
+    {
+      "path": "decoder/short.mlmodelc/model.mil",
+      "size": 293535,
+      "sha256": "548bb456a46c95f6668cd72527d6c1abf10f328ec318b7adfd00f4de1ee67d27"
+    },
+    {
+      "path": "decoder/short.mlmodelc/weights/weight.bin",
+      "size": 213095504,
+      "sha256": "d2f38094a97fd683c6f6da9aa36ee5c16e4ee937f4e4b065ef5d0eb35c354c88"
+    },
+    {
+      "path": "kokoro_backend.mlmodelc/analytics/coremldata.bin",
+      "size": 243,
+      "sha256": "b1599dc9c9373adddf5b87b5e7393e188b1ca14ea077558264fa945a55f05d2c"
+    },
+    {
+      "path": "kokoro_backend.mlmodelc/coremldata.bin",
+      "size": 535,
+      "sha256": "f764e336c50f4c1ef8f4403f402bef731028f692d9e80adb24bfdcd55c8fd35f"
+    },
+    {
+      "path": "kokoro_backend.mlmodelc/metadata.json",
+      "size": 3772,
+      "sha256": "04685e9ae0845e592ee5a38847f5156ceb1aa11628c6ae4df9edd01f6ef6576c"
+    },
+    {
+      "path": "kokoro_backend.mlmodelc/model.mil",
+      "size": 315958,
+      "sha256": "5a6dc7cac4c822d3eed6a49c3d053ded9717a017db9a058e71a8a259a05cba52"
+    },
+    {
+      "path": "kokoro_backend.mlmodelc/weights/weight.bin",
+      "size": 53682048,
+      "sha256": "151a0ec1084bd38261ce51cb864abad43ceebf82b742cecd7877c020f03176ca"
+    },
+    {
+      "path": "kokoro_frontend.mlmodelc/analytics/coremldata.bin",
+      "size": 243,
+      "sha256": "cf0f1630b33a84c218a4c05a1ca988a83a016e249751d24772015465d6caa7b4"
+    },
+    {
+      "path": "kokoro_frontend.mlmodelc/coremldata.bin",
+      "size": 611,
+      "sha256": "f43957cb80a69c0619b318bebf2f2a2220d514b005efffb4dc0422a96cc494d3"
+    },
+    {
+      "path": "kokoro_frontend.mlmodelc/metadata.json",
+      "size": 5857,
+      "sha256": "edca0fa72045a8b7f6aad53e8f0ae7c06b5a986304070f419ca098392c99c94e"
+    },
+    {
+      "path": "kokoro_frontend.mlmodelc/model.mil",
+      "size": 313979,
+      "sha256": "758763aa3fd06402150c4358e14d056210c3cb0729e466b00e768f20bc7bc6f3"
+    },
+    {
+      "path": "kokoro_frontend.mlmodelc/weights/weight.bin",
+      "size": 28120832,
+      "sha256": "3a41762f93574bd691f18618c7f99b0228f41c8f8c1bad4f509402164ffcab04"
+    },
+    {
+      "path": "voices/af_alloy.bin",
+      "size": 524290,
+      "sha256": "7335237593b16eeb40044f339d48ecc54df1641e8bc84ce8fc967d0ad9b6a911"
+    },
+    {
+      "path": "voices/af_aoede.bin",
+      "size": 524290,
+      "sha256": "fb9192074f9bdc97cd44ecec28af0d176ec79b2dc60adca5356ff1caf3f4c90f"
+    },
+    {
+      "path": "voices/af_bella.bin",
+      "size": 524290,
+      "sha256": "59fbaf60ef2aa3f52a83b10551e1534079f46cb12113de96ca69de89bcdf6dc0"
+    },
+    {
+      "path": "voices/af_heart.bin",
+      "size": 524290,
+      "sha256": "f695bceed658c35c6e079f81e746be4508c2cc9b2bc8a3427f4e149dc5922fe1"
+    },
+    {
+      "path": "voices/af_jessica.bin",
+      "size": 524290,
+      "sha256": "72689c8d777a1338e3f17117d368348c3b7a74d0270034737280f98e69bbfdbe"
+    },
+    {
+      "path": "voices/af_kore.bin",
+      "size": 524290,
+      "sha256": "7bcfe118f4433af004b383fdc7d53228eb7afdec26121e6324e865150b5e58ed"
+    },
+    {
+      "path": "voices/af_nicole.bin",
+      "size": 524290,
+      "sha256": "bc83d225d8e3c682469b45dbecdc2e2f16d8672b0e6c8a654ade89fd78a9bfcb"
+    },
+    {
+      "path": "voices/af_nova.bin",
+      "size": 524290,
+      "sha256": "a5f7d9688a9905170863cc4b026a14406c92bea07152345e7edb972078be2918"
+    },
+    {
+      "path": "voices/af_river.bin",
+      "size": 524290,
+      "sha256": "6b79675d5a07f1869d79c4369da84a0c0ff724812216d0a21989479deb0e7700"
+    },
+    {
+      "path": "voices/af_sarah.bin",
+      "size": 524290,
+      "sha256": "609c7b79b4df0570f4125ab7b3272244a85f4ad5082e213eb38076e7d0f8fee5"
+    },
+    {
+      "path": "voices/af_sky.bin",
+      "size": 524290,
+      "sha256": "a35290147417d2caba96077b70a57af2198334d1171f2c0bd50047ffa828933a"
+    },
+    {
+      "path": "voices/am_adam.bin",
+      "size": 524290,
+      "sha256": "20c4a828607bc634c496c221332c51643ff6e683403db9a44ffcf08cb32f6ef8"
+    },
+    {
+      "path": "voices/am_echo.bin",
+      "size": 524290,
+      "sha256": "1a275d84b82644ef4b4394ac0dd6f5d9931078bf844d183abbce8cd5784d8106"
+    },
+    {
+      "path": "voices/am_eric.bin",
+      "size": 524290,
+      "sha256": "3eb860d719a7f3dcc9627d8b233f8560e2438ad6f635580d89c363361a2d18aa"
+    },
+    {
+      "path": "voices/am_fenrir.bin",
+      "size": 524290,
+      "sha256": "04ef9dbd34e079038f4570b9e6639acdbe54a5fbfae514cf21b3619f6a321390"
+    },
+    {
+      "path": "voices/am_liam.bin",
+      "size": 524290,
+      "sha256": "2bd709467d1f72cef1e736eb36c609c2563d3b03ce5142dd1247ae693f7fbd49"
+    },
+    {
+      "path": "voices/am_michael.bin",
+      "size": 524290,
+      "sha256": "d15f887a8eb1e8eb7476bebd975fb82cb1112aed6b1f89cc5732db4bce2ee7ae"
+    },
+    {
+      "path": "voices/am_onyx.bin",
+      "size": 524290,
+      "sha256": "85edde7eb57d573bf0fdcfaf0e324630e1a480fa70ebe8fc533bcec10b5715e4"
+    },
+    {
+      "path": "voices/am_puck.bin",
+      "size": 524290,
+      "sha256": "25250677c54b7592cf2a11b941693615af27ee9e722ee3686a97d2f8d9400276"
+    },
+    {
+      "path": "voices/am_santa.bin",
+      "size": 524290,
+      "sha256": "e388f1a15bbc998296bf8eb3a8a88a80f6d91cdd4b466a1d690b603ba6530eab"
+    },
+    {
+      "path": "voices/bf_alice.bin",
+      "size": 524290,
+      "sha256": "a32a3a08b44d1eea95aaca1cd507240bd6e1a5a0944c75cce9e23354198b9965"
+    },
+    {
+      "path": "voices/bf_emma.bin",
+      "size": 524290,
+      "sha256": "cabf1512443355b5e62956ebd1e322376f4c8500ab0c74521e4454ace3a21132"
+    },
+    {
+      "path": "voices/bf_isabella.bin",
+      "size": 524290,
+      "sha256": "cea516575a4ae07b0f308ff5f7dc988ed32f2e37d7a6a9944179000c501446d0"
+    },
+    {
+      "path": "voices/bf_lily.bin",
+      "size": 524290,
+      "sha256": "7bc2732d136bcce217512d35a3ff6779fb67cd1bec9ce97632b997200988f4d1"
+    },
+    {
+      "path": "voices/bm_daniel.bin",
+      "size": 524290,
+      "sha256": "ba9859ec89808c97a416faa3c9c8e4a0259666942e51602ee9a50e25598f6fee"
+    },
+    {
+      "path": "voices/bm_fable.bin",
+      "size": 524290,
+      "sha256": "555075c32ee5f1d44b1d8e3e1b6ac49f54aab6c94fc189146ddcc598dc146eb6"
+    },
+    {
+      "path": "voices/bm_george.bin",
+      "size": 524290,
+      "sha256": "f6706f974ac1d7d98579526ea943a34a6f43276a218a0537f9b5b56e55477b92"
+    },
+    {
+      "path": "voices/bm_lewis.bin",
+      "size": 524290,
+      "sha256": "1b8ead7dc812d2c64f6b084851023d55c14b3b62836d4342299aa0f18f9a68a4"
+    },
+    {
+      "path": "voices/ef_dora.bin",
+      "size": 524290,
+      "sha256": "479be2a1766c35cb7bf6e52ed38771ba2ea633116c3e8dbe7fb78998382bbd6e"
+    },
+    {
+      "path": "voices/em_alex.bin",
+      "size": 524290,
+      "sha256": "b0fd7a32d1d59ea77a11de2bd976b98f96e79449972a00f01098719275230914"
+    },
+    {
+      "path": "voices/em_santa.bin",
+      "size": 524290,
+      "sha256": "0d4881944b5e2326d178bb1479583ae9353960921ec46955193eedd646fbe4fa"
+    },
+    {
+      "path": "voices/ff_siwis.bin",
+      "size": 524290,
+      "sha256": "6a4f0f917e2064536430f1004579c15c0ae3ffc9d0b3522561adba3cd293fb2e"
+    },
+    {
+      "path": "voices/hf_alpha.bin",
+      "size": 524290,
+      "sha256": "6d7b5173f91c525f3d56a8476abd453748346cf60ae67e7eb409935aa5e2a0e6"
+    },
+    {
+      "path": "voices/hf_beta.bin",
+      "size": 524290,
+      "sha256": "5f45d7d42ca605862c768cd25006a0c5853618f3c3108dae301f8efe44c89b5e"
+    },
+    {
+      "path": "voices/hm_omega.bin",
+      "size": 524290,
+      "sha256": "dd66986b50550f5653fcb58c51f401af02a00365af565d62361149eed02b146c"
+    },
+    {
+      "path": "voices/hm_psi.bin",
+      "size": 524290,
+      "sha256": "be595cbcbfb4d8a2aac47a3397f2d1232aab03c66716c45b74fd904ec7810737"
+    },
+    {
+      "path": "voices/if_sara.bin",
+      "size": 524290,
+      "sha256": "af97090b407aa425b607928c8eb52a24a8832dcd0da8e6950c739d04638e8f9a"
+    },
+    {
+      "path": "voices/im_nicola.bin",
+      "size": 524290,
+      "sha256": "973d1e8991959f3ab6e6b598be062b07a532b283360820c0d1610190b780796a"
+    },
+    {
+      "path": "voices/jf_alpha.bin",
+      "size": 524290,
+      "sha256": "f427a952985903dc91f11b34a3ea0f5b88166b053980a48ef9fbbe5f7bbd4a2c"
+    },
+    {
+      "path": "voices/jf_gongitsune.bin",
+      "size": 524290,
+      "sha256": "f9e47e835493629609ba4fed5ed192220a93fc53669600deea40fd0ef02a09f8"
+    },
+    {
+      "path": "voices/jf_nezumi.bin",
+      "size": 524290,
+      "sha256": "ad820158cbd12901455e0de6c18cb5c5ef530e1f5ed4a6ef2d42260ebb23142c"
+    },
+    {
+      "path": "voices/jf_tebukuro.bin",
+      "size": 524290,
+      "sha256": "a315c5bb080f0d3d78cccb5f32b5030d043ca2b07fede102d71f1e5cdba003ac"
+    },
+    {
+      "path": "voices/jm_kumo.bin",
+      "size": 524290,
+      "sha256": "56e5936fab18de8a06517370faadc0c64b96e6a9fa054cb0840df6f4c83a899f"
+    },
+    {
+      "path": "voices/pf_dora.bin",
+      "size": 524290,
+      "sha256": "cb06170d0f4da0e78ac769d9ce811355b4a5dfe645790368e68d1fcab14f7280"
+    },
+    {
+      "path": "voices/pm_alex.bin",
+      "size": 524290,
+      "sha256": "fd0efcb31984c05cda513561971bf3b5231c7068a671a87b49983772c2f49cc5"
+    },
+    {
+      "path": "voices/pm_santa.bin",
+      "size": 524290,
+      "sha256": "23fbacb28bcbf4b9341f3a517b810f7e7d89571481920fef9daf7bae36695d20"
+    },
+    {
+      "path": "voices/zf_xiaobei.bin",
+      "size": 524290,
+      "sha256": "dd358015295fc76cea64796d449d3cdfce73732cec4d3e42234dee078077ad0b"
+    },
+    {
+      "path": "voices/zf_xiaoni.bin",
+      "size": 524290,
+      "sha256": "00028910742e5af96e870c08053459e5256b0f99f9b765d1b157c2339d91f2c6"
+    },
+    {
+      "path": "voices/zf_xiaoxiao.bin",
+      "size": 524290,
+      "sha256": "22a6407801402cf731aa195dc5ae9ff38bc9fdabcda839dd130dc446192a5215"
+    },
+    {
+      "path": "voices/zf_xiaoyi.bin",
+      "size": 524290,
+      "sha256": "c102e64b473dcef73da250eb0ca909323345137d03566c8f699d5e041d40baaf"
+    },
+    {
+      "path": "voices/zm_yunjian.bin",
+      "size": 524290,
+      "sha256": "416137697099d86e891f10327a05b10e53d7c872baa2ac40dbdbfdd4bd817818"
+    },
+    {
+      "path": "voices/zm_yunxi.bin",
+      "size": 524290,
+      "sha256": "2599e06632b7a656b51aadf008c5b56b1dfa3cbfb12b8dd5f9f7d79d64b7cf22"
+    },
+    {
+      "path": "voices/zm_yunxia.bin",
+      "size": 524290,
+      "sha256": "d61c8d5e3ba39776ff94fd6086a9aa2c5a31c32fa1355638946d267cd816083f"
+    },
+    {
+      "path": "voices/zm_yunyang.bin",
+      "size": 524290,
+      "sha256": "ebb48d8c7b4237dd78bb1d74ddabfcb7efa64887017fccae3f3abd83c50754cc"
+    }
+  ]
+}

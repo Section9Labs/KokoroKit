@@ -1,0 +1,24 @@
+name: KokoroDemo
+packages:
+  KokoroKit:
+    path: ../..
+targets:
+  KokoroDemo:
+    type: application
+    platform: iOS
+    deploymentTarget: '18.0'
+    sources: [Sources]
+    dependencies:
+      - package: KokoroKit
+        product: KokoroKit
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIBackgroundModes: [audio]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.example.KokoroDemo
+        SUPPORTS_MACCATALYST: YES
+        SWIFT_VERSION: '6.0'
+        TARGETED_DEVICE_FAMILY: '1,2,6'

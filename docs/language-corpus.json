@@ -1,0 +1,290 @@
+[
+  {
+    "id": "en-roman",
+    "language": "en",
+    "langCode": "a",
+    "voice": "af_heart",
+    "text": "Chapter XII. The clock struck twelve.",
+    "focus": "Roman chapter numeral"
+  },
+  {
+    "id": "en-numbers",
+    "language": "en",
+    "langCode": "a",
+    "voice": "af_heart",
+    "text": "The 1st ticket cost £21.05; the 12th cost $12.50.",
+    "focus": "Ordinals and currencies"
+  },
+  {
+    "id": "en-time",
+    "language": "en",
+    "langCode": "a",
+    "voice": "af_heart",
+    "text": "At 1:00, she whispered: “Already?” At 15:05, he returned.",
+    "focus": "Time and dialogue"
+  },
+  {
+    "id": "en-phrasing",
+    "language": "en",
+    "langCode": "a",
+    "voice": "af_heart",
+    "text": "Wait... is that you?\n\nThe door opened\n\nNobody spoke.",
+    "focus": "Ellipsis and paragraph boundaries"
+  },
+  {
+    "id": "es-roman",
+    "language": "es",
+    "langCode": "e",
+    "voice": "ef_dora",
+    "text": "Capítulo XII. En el siglo XII, el viaje apenas comenzaba.",
+    "focus": "Reported XII regression"
+  },
+  {
+    "id": "es-roman",
+    "language": "es",
+    "langCode": "e",
+    "voice": "em_alex",
+    "text": "Capítulo XII. En el siglo XII, el viaje apenas comenzaba.",
+    "focus": "Reported XII regression"
+  },
+  {
+    "id": "es-roman-heading",
+    "language": "es",
+    "langCode": "e",
+    "voice": "ef_dora",
+    "text": "XII\n\nLa puerta se abrió. ¿Quién estaba allí?",
+    "focus": "Standalone chapter heading"
+  },
+  {
+    "id": "es-roman-heading",
+    "language": "es",
+    "langCode": "e",
+    "voice": "em_alex",
+    "text": "XII\n\nLa puerta se abrió. ¿Quién estaba allí?",
+    "focus": "Standalone chapter heading"
+  },
+  {
+    "id": "es-numbers",
+    "language": "es",
+    "langCode": "e",
+    "voice": "ef_dora",
+    "text": "Pagó 21,01 € por 31 páginas. Era el 5 % del total.",
+    "focus": "Agreement and leading fractional zero"
+  },
+  {
+    "id": "es-numbers",
+    "language": "es",
+    "langCode": "e",
+    "voice": "em_alex",
+    "text": "Pagó 21,01 € por 31 páginas. Era el 5 % del total.",
+    "focus": "Agreement and leading fractional zero"
+  },
+  {
+    "id": "es-phrasing",
+    "language": "es",
+    "langCode": "e",
+    "voice": "ef_dora",
+    "text": "Espera... ¿ya son las 21:21?\n\nNadie respondió.",
+    "focus": "Dialogue, time and pauses"
+  },
+  {
+    "id": "es-phrasing",
+    "language": "es",
+    "langCode": "e",
+    "voice": "em_alex",
+    "text": "Espera... ¿ya son las 21:21?\n\nNadie respondió.",
+    "focus": "Dialogue, time and pauses"
+  },
+  {
+    "id": "fr-roman",
+    "language": "fr",
+    "langCode": "f",
+    "voice": "ff_siwis",
+    "text": "Chapitre XII. La porte était encore fermée.",
+    "focus": "Roman chapter numeral"
+  },
+  {
+    "id": "fr-numbers",
+    "language": "fr",
+    "langCode": "f",
+    "voice": "ff_siwis",
+    "text": "Six euros, dix euros, six livres et dix pages.",
+    "focus": "Number liaison and final consonants"
+  },
+  {
+    "id": "fr-date",
+    "language": "fr",
+    "langCode": "f",
+    "voice": "ff_siwis",
+    "text": "Le 2026-05-01, elle paya 21,01 € à 1:01.",
+    "focus": "First day and feminine time agreement"
+  },
+  {
+    "id": "fr-phrasing",
+    "language": "fr",
+    "langCode": "f",
+    "voice": "ff_siwis",
+    "text": "« Tu viens... vraiment ? »\n\nLa porte s’ouvrit\n\nPersonne ne répondit.",
+    "focus": "Quotes, phrase accent and paragraphs"
+  },
+  {
+    "id": "it-roman",
+    "language": "it",
+    "langCode": "i",
+    "voice": "if_sara",
+    "text": "Capitolo XII. Nessuno aveva ancora aperto il libro.",
+    "focus": "Roman chapter numeral"
+  },
+  {
+    "id": "it-numbers",
+    "language": "it",
+    "langCode": "i",
+    "voice": "if_sara",
+    "text": "Dodici, tredici, quattordici, quindici, sedici e diciassette.",
+    "focus": "Number lexical stress"
+  },
+  {
+    "id": "it-time",
+    "language": "it",
+    "langCode": "i",
+    "voice": "if_sara",
+    "text": "Alle 1:01, il prezzo era di 21,01 €. Era il 5% del totale.",
+    "focus": "Time and currency agreement"
+  },
+  {
+    "id": "it-phrasing",
+    "language": "it",
+    "langCode": "i",
+    "voice": "if_sara",
+    "text": "«Davvero... sei tu?»\n\nLa porta si aprì\n\nNessuno rispose.",
+    "focus": "Dialogue and paragraph boundaries"
+  },
+  {
+    "id": "pt-roman",
+    "language": "pt",
+    "langCode": "p",
+    "voice": "pf_dora",
+    "text": "Capítulo XII. A viagem estava apenas começando.",
+    "focus": "Roman chapter numeral"
+  },
+  {
+    "id": "pt-numbers",
+    "language": "pt",
+    "langCode": "p",
+    "voice": "pf_dora",
+    "text": "O livro custou R$ 21,01. Dois livros custaram R$ 42,02.",
+    "focus": "Brazilian reais and centavos"
+  },
+  {
+    "id": "pt-time",
+    "language": "pt",
+    "langCode": "p",
+    "voice": "pf_dora",
+    "text": "Às 2:01, chegaram 22 pessoas. Às 22:02, foram embora.",
+    "focus": "Feminine number and time agreement"
+  },
+  {
+    "id": "pt-phrasing",
+    "language": "pt",
+    "langCode": "p",
+    "voice": "pf_dora",
+    "text": "“Espera... é você?”\n\nA porta se abriu\n\nNinguém respondeu.",
+    "focus": "Dialogue and paragraph boundaries"
+  },
+  {
+    "id": "hi-roman",
+    "language": "hi",
+    "langCode": "h",
+    "voice": "hf_alpha",
+    "text": "अध्याय XII। कहानी अभी शुरू हुई थी।",
+    "focus": "Roman chapter numeral"
+  },
+  {
+    "id": "hi-numbers",
+    "language": "hi",
+    "langCode": "h",
+    "voice": "hf_alpha",
+    "text": "किताब की कीमत ₹१,२५०.०५ थी। छूट ५% थी।",
+    "focus": "Devanagari digits, grouping, small fraction"
+  },
+  {
+    "id": "hi-time",
+    "language": "hi",
+    "langCode": "h",
+    "voice": "hf_alpha",
+    "text": "१:०५ बजे वह आया। १५:३० बजे हम घर गए।",
+    "focus": "Avoid duplicated time unit"
+  },
+  {
+    "id": "hi-phrasing",
+    "language": "hi",
+    "langCode": "h",
+    "voice": "hf_alpha",
+    "text": "“रुको... क्या तुम हो?”\n\nदरवाज़ा खुला\n\nकोई नहीं बोला।",
+    "focus": "Dialogue and paragraph boundaries"
+  },
+  {
+    "id": "ja-roman",
+    "language": "ja",
+    "langCode": "j",
+    "voice": "jf_alpha",
+    "text": "第XII章。物語はまだ始まったばかりです。",
+    "focus": "Roman chapter numeral"
+  },
+  {
+    "id": "ja-date",
+    "language": "ja",
+    "langCode": "j",
+    "voice": "jf_alpha",
+    "text": "2026-04-01、4:01に出発します。2026-09-20に帰ります。",
+    "focus": "Irregular day, month and minute readings"
+  },
+  {
+    "id": "ja-numbers",
+    "language": "ja",
+    "langCode": "j",
+    "voice": "jf_alpha",
+    "text": "1人、2人、3人です。1本、3本、6本あります。",
+    "focus": "People and long-object counters"
+  },
+  {
+    "id": "ja-phrasing",
+    "language": "ja",
+    "langCode": "j",
+    "voice": "jf_alpha",
+    "text": "「待って……本当ですか？」\n\nドアが開いた\n\n誰も答えなかった。",
+    "focus": "Japanese quotes, ellipsis and paragraphs"
+  },
+  {
+    "id": "zh-roman",
+    "language": "zh",
+    "langCode": "z",
+    "voice": "zf_xiaobei",
+    "text": "第XII章。故事才刚刚开始。",
+    "focus": "Roman chapter numeral"
+  },
+  {
+    "id": "zh-date",
+    "language": "zh",
+    "langCode": "z",
+    "voice": "zf_xiaobei",
+    "text": "2026-10-01，我们在2:05出发。2021年，他第一次来到这里。",
+    "focus": "Digit-by-digit years and time"
+  },
+  {
+    "id": "zh-numbers",
+    "language": "zh",
+    "langCode": "z",
+    "voice": "zf_xiaobei",
+    "text": "价格是￥21.05，折扣是5%。2个人买了2本书。",
+    "focus": "Currency, percentage and classifier two"
+  },
+  {
+    "id": "zh-phrasing",
+    "language": "zh",
+    "langCode": "z",
+    "voice": "zf_xiaobei",
+    "text": "“等等……真的是你吗？”\n\n门开了\n\n没有人回答。",
+    "focus": "Dialogue and paragraph boundaries"
+  }
+]
