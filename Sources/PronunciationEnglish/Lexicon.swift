@@ -300,8 +300,7 @@ public final class Lexicon {
             let phonemes: String
             switch ctx.futureVowel {
             case nil: phonemes = goldString(for: "to") ?? "tu"
-            case false: phonemes = "tə"
-            case true: phonemes = "tʊ"
+            case .some(let beforeVowel): phonemes = beforeVowel ? "tʊ" : "tə"
             }
             return (phonemes, 4)
         }

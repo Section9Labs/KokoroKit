@@ -74,7 +74,7 @@ Functional similarity is not by itself a claim of copied expression. Conversely,
 
 ## English: reused Apache-2.0 component
 
-`Sources/PronunciationEnglish` contains four Swift files and four JSON resources previously used in KokoroKit. They originated in `mweinbach/kokoro-swift`, revision `20bf04c506e913ff129d7d2229398180ba24c690`, `Packages/Misaki`, a Swift adaptation of hexgrad's Misaki. Source files/data moved without rewriting their phonological content. New work changes the package/module location and adds a common adapter and bounded dialect cache.
+`Sources/PronunciationEnglish` contains four Swift files and four JSON resources previously used in KokoroKit. They originated in `mweinbach/kokoro-swift`, revision `20bf04c506e913ff129d7d2229398180ba24c690`, `Packages/Misaki`, a Swift adaptation of hexgrad's Misaki. Source files/data moved without rewriting their phonological content. New work changes the package/module location, adds a common adapter and bounded dialect cache, and spells out an optional-Boolean switch case for older Swift 6 compilers without changing its results.
 
 - https://github.com/mweinbach/kokoro-swift
 - https://github.com/hexgrad/misaki
@@ -1310,7 +1310,6 @@ SOFTWARE.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
 
 MIT License
 

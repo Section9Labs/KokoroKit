@@ -6,4 +6,4 @@ Upstream declares French MIT and globally credits Aspell reference wordlists.
 Underlying provenance has not been independently audited.
 Derived form: lowercase NFC single-word keys, first pronunciations, canonical
 IPA g/affricates, stripped delimiters/syllable dots/stress, UTF-8 sort.
-See docs/ROMANCE.md for complete transformation and content checksums.
+See docs/pronunciation/ROMANCE.md for complete transformation and content checksums.
