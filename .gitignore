@@ -17,3 +17,7 @@ Examples/KokoroDemo/Info.plist
 Models/
 *.tar.gz
 *.partial
+.venv-narration/
+.venv-desktop-narration/
+Benchmarks/Narration/results/
+Benchmarks/Narration/Device/Info.plist

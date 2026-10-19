@@ -14,6 +14,10 @@ Add `https://github.com/Section9Labs/KokoroKit` in Xcode, or use Swift Package M
 
 Products: `KokoroKit` (synthesis), `KokoroCatalog` (voices/assets), and `KokoroPronunciation` (text to model phonemes). There are no remote Swift dependencies. Swift 6 is required. Source targets support iOS/Catalyst 17+ and macOS 13+; the supplied Core ML assets require **iOS/Catalyst 18+ and macOS 15+**. Apple system language facilities are required, so Linux is not supported.
 
+The development branch also provides `KokoroNarration` (book planning and persistent cast metadata) and `KokoroAudio` (bounded voice enhancement). They are opt-in and are **not part of the v0.1.0 tag above**. Consumers testing them should pin an exact reviewed commit with SwiftPM's `revision:` requirement. Neither module changes the default synthesis engine or silently enables effects.
+
+See [the narrator integration API](docs/book-planning.md), [casting rules](docs/story-narrator.md), and [enhancement API and validation limits](docs/audio-enhancement.md). Qwen experiments remain standalone benchmark tools; no MLX dependency is added to these library products.
+
 ## Speak
 
 ```swift

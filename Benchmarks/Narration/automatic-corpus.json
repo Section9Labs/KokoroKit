@@ -1,0 +1,50 @@
+{
+  "bookID": "gutenberg-31465",
+  "language": "es",
+  "narrator": "em_santa",
+  "voicePool": [
+    "ef_dora",
+    "em_alex"
+  ],
+  "chapters": [
+    {
+      "key": "chapter-vi",
+      "chapterID": "VI",
+      "text": "Rosalía, que en aquel momento pasaba con un gran jarro para ir a la cocina en busca de agua, dio un disimulado golpe en el brazo de su marido. Bien entendió Bringas aquel mudo lenguaje que quería decir «no convides hoy, hombre».\n\n«Señores—dijo Amparo sonriendo—, apartarse. Voy a poner la mesa».\n\nY mientras extendía el mantel, Caballero, mirándola, contestaba maquinalmente:\n\n«Hoy no puedo. Me quedaré otro día».\n\nEn esto llegaba al comedor un rumorcillo oratorio, procedente del inmediato cuarto en que encerrados estaban el estudioso hijo de Bringas y el no menos despierto niño de Pez. Ambos habían principiado la carrera de Leyes, y se adestraban en el pugilato de la palabra, espoleados desde tan temprana edad por la ambicioncilla puramente española de ser notabilidades en el Foro y en el Parlamento.",
+      "sourceParagraphs": [
+        241,
+        242,
+        243,
+        244,
+        245
+      ]
+    },
+    {
+      "key": "chapter-xx",
+      "chapterID": "XX",
+      "text": "Amparito, confusa, se dejó estrechar la mano por la vigorosa y ardiente de su amigo. Miraba a otra parte, a ninguna parte. Tenía la vista extraviada. Había visto pasar una sombra negra.\n\n«Ese gran suspiro—preguntó Caballero en tono pueril—¿es por mí?».\n\nElla le miró. Iba a decir que sí, pero no dijo sino:\n\n«Con cien mil vidas que tuviera no le pagaría a usted...».\n\n—Yo no quiero cien mil vidas; me basta con una, a cambio de la que yo doy. Lo que ofrezco no es gran cosa. Todos dicen que soy un bruto, un salvaje. Bien comprendo que no tengo atractivos, que mis modales son algo toscos y mi conversación seca. Me he criado en la soledad, y no es extraño que esa segunda madre mía me haya sacado un tanto parecido a ella. Quizás en la vida íntima me encontrarían aceptable los que me tachan de soso en la sociedad; pero esto no lo saben los que me ven de lejos...\n\n—Lo que a los demás no gusta—afirmó la joven resuelta, inspirada—a mí me gusta.",
+      "sourceParagraphs": [
+        803,
+        804,
+        805,
+        806,
+        807,
+        808
+      ]
+    },
+    {
+      "key": "chapter-xxxi",
+      "chapterID": "XXXI",
+      "text": "En la sala sentáronse el uno frente al otro, igualmente desalentados y abatidos. No acertaba ella a tomar una resolución ni él a proponerla. La sucesión atropellada de tantas contrariedades habíala puesto a ella como idiota, y en cuanto a Polo, únicamente daba señales de vida en la tenacidad con que la miraba... ¡tan hermosa y para él perdida! Los juicios del desgraciado varón oscilaban, con movimiento de péndulo, entre el bien que perdía y aquel largo viaje que iba a emprender irrevocablemente.\n\n«¿Qué hora es?»—preguntó Amparo cortando aquel silencio tristísimo.\n\n—Las siete y media... casi las ocho menos veinte. Estás presa.\n\n—¡No, por Dios!—exclamó ella levantándose inquieta—. Me voy. Que me vea... Tengo mi conciencia tranquila.",
+      "sourceParagraphs": [
+        1268,
+        1269,
+        1270,
+        1271
+      ]
+    }
+  ],
+  "sourceURL": "https://www.gutenberg.org/cache/epub/31465/pg31465-images.html",
+  "sourceHTMLSHA256": "0285df9f7632fc3471cd4a4a0477b119c7704d69d1584db6c487b88d0661d178",
+  "selection": "Contiguous original excerpts from three real chapters; original speech tags retained. No supplied character names or speaker annotations."
+}

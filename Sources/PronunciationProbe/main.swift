@@ -1,20 +1,37 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
-// Copyright (c) 2026 Section9Labs and contributors
 import Foundation
 import KokoroPronunciation
 
 let arguments = CommandLine.arguments
 guard arguments.count >= 3, let language = PronunciationLanguage(rawValue: arguments[1]) else {
-    FileHandle.standardError.write(Data("Usage: pronunciation-probe <en|es|fr|hi|it|ja|zh|pt> <text> [--british]\n".utf8))
+    FileHandle.standardError.write(Data("Usage: pronunciation-probe <language> <text> [--british] [--adverb-stress] [--plan] [--target=180]\n".utf8))
     exit(2)
 }
-let text = arguments.dropFirst(2).filter { $0 != "--british" }.joined(separator: " ")
+let flags = ["--british", "--adverb-stress", "--plan"]
+let text = arguments.dropFirst(2).filter { !flags.contains($0) && !$0.hasPrefix("--target=") }.joined(separator: " ")
+struct PreparedUnit: Encodable {
+    let text: String
+    let boundary: NarrationBoundary
+    let pronunciation: PronunciationResult
+}
 do {
-    let result = try PronunciationEngine().phonemize(text, language: language,
-        options: .init(britishEnglish: arguments.contains("--british")))
+    let options = PronunciationOptions(britishEnglish: arguments.contains("--british"),
+        spanishAdverbDoubleStress: arguments.contains("--adverb-stress"))
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-    FileHandle.standardOutput.write(try encoder.encode(result) + Data([10]))
+    let engine = PronunciationEngine()
+    let data: Data
+    if arguments.contains("--plan") {
+        let target = arguments.first(where: { $0.hasPrefix("--target=") }).flatMap { Int($0.dropFirst(9)) } ?? 180
+        let units = try NarrationPlanner().plan(text, language: language, options: options, targetPhonemes: target)
+        data = try encoder.encode(units.map {
+            PreparedUnit(text: $0.text, boundary: $0.boundaryAfter,
+                         pronunciation: try engine.phonemize($0.text, language: language, options: options))
+        })
+    } else {
+        data = try encoder.encode(engine.phonemize(text, language: language, options: options))
+    }
+    FileHandle.standardOutput.write(data + Data([10]))
 } catch {
     FileHandle.standardError.write(Data("\(error)\n".utf8))
     exit(1)

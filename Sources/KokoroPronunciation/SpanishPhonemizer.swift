@@ -13,7 +13,7 @@ public enum SpanishDialect: String, Sendable, Codable {
 public struct SpanishPhonemizer: Sendable {
     public init() {}
 
-    public func phonemize(_ text: String, dialect: SpanishDialect = .spain) -> String {
+    public func phonemize(_ text: String, dialect: SpanishDialect = .spain, adverbDoubleStress: Bool = false) -> String {
         let tokens = tokenize(text.precomposedStringWithCanonicalMapping)
         var output = ""
         var previousSound: String?
@@ -32,9 +32,20 @@ public struct SpanishPhonemizer: Sendable {
             let nuclei = vowelNuclei(sounds)
             let stress = stressPosition(word: word, sounds: sounds, nuclei: nuclei,
                                         unstressed: hasNeighbor && Self.functionWords.contains(word), dialect: dialect)
+            // Opt-in: derived -mente adverbs retain the adjective's lexical stress.
+            // Both tonic syllables are explicit; relative acoustic prominence is
+            // model-dependent and must be evaluated with native listeners.
+            var stresses = Set(stress.map { [$0] } ?? [])
+            if adverbDoubleStress, let base = adverbBase(word) {
+                let baseSounds = spell(base, dialect: dialect)
+                if let baseStress = stressPosition(word: base, sounds: baseSounds,
+                    nuclei: vowelNuclei(baseSounds), unstressed: false, dialect: dialect) {
+                    stresses = [baseStress, baseSounds.count] // /men/ starts at suffix onset.
+                }
+            }
             makeGlides(&sounds, nuclei: nuclei)
             for position in sounds.indices {
-                if position == stress { output += "ˈ" }
+                if stresses.contains(position) { output += "ˈ" }
                 let underlying = sounds[position].ipa
                 var realized = underlying
                 switch underlying {
@@ -56,6 +67,31 @@ public struct SpanishPhonemizer: Sendable {
         return output
     }
 
+    private func adverbBase(_ word: String) -> String? {
+        guard word.hasSuffix("mente"), word.count > 6,
+              !Self.nonAdverbMenteForms.contains(word) else { return nil }
+        let base = String(word.dropLast(5))
+        // Productive feminine -a, invariant -al/-ble bases plus a conservative set of other
+        // adjectives. Never interpret comente/aumente/vehemente as adverbs.
+        if base.hasSuffix("a") || base.hasSuffix("al") || base.hasSuffix("ble")
+            || Self.invariantAdverbBases.contains(base) { return base }
+        return nil
+    }
+
+    // Verb forms ending in the same letters as derived adverbs. A suffix alone
+    // is not sufficient evidence; retain their ordinary lexical stress.
+    private static let nonAdverbMenteForms: Set<String> = [
+        "lamente", "ornamente", "desornamente", "fundamente", "reglamente",
+        "parlamente", "juramente", "testamente", "sacramente"
+    ]
+
+    private static let invariantAdverbBases: Set<String> = [
+        "grande", "feliz", "infeliz", "fácil", "difícil", "ágil", "débil", "hábil",
+        "cortés", "descortés", "común", "tenaz", "veloz", "útil", "inútil", "igual", "normal", "natural", "general", "real", "especial",
+        "total", "formal", "fiel", "cruel", "cordial", "amable", "probable", "posible",
+        "imposible", "simple", "breve", "leve", "suave", "fuerte", "libre"
+    ]
+
     private struct Token {
         var text: String
         var isWord: Bool
@@ -74,7 +110,11 @@ public struct SpanishPhonemizer: Sendable {
         "el", "la", "los", "las", "lo", "un", "una", "unos", "unas",
         "me", "te", "se", "nos", "os", "le", "les", "mi", "mis", "tu", "tus", "su", "sus",
         "a", "ante", "bajo", "con", "contra", "de", "desde", "en", "entre", "hacia", "hasta",
-        "para", "por", "sin", "sobre", "tras", "al", "del", "y", "e", "o", "u", "ni", "que", "si", "pero", "porque", "aunque", "sino"
+        "para", "por", "sin", "sobre", "tras", "al", "del", "y", "e", "o", "u", "ni", "que", "si", "pero", "porque", "aunque", "sino",
+        // Unaccented relative/conjunction; interrogative cuándo keeps its stress.
+        "cuando",
+        // Literary adversative conjunction; accented más remains tonic.
+        "mas"
     ]
 
     private func tokenize(_ text: String) -> [Token] {

@@ -14,21 +14,23 @@ struct DecoderWindow: Equatable {
     let frames: Range<Int>
     let output: Range<Int>
 
-    static func plan(totalFrames: Int) -> [Self] {
+    static func plan(totalFrames: Int, context: Int = contextFrames, blend: Int = blendSamples) -> [Self] {
+        precondition((0..<maximumFrames / 2).contains(context))
+        precondition(blend >= 0 && blend <= (maximumFrames - 2 * context) * samplesPerFrame)
         guard totalFrames > 0 else { return [] }
         let totalSamples = totalFrames * samplesPerFrame
         guard totalFrames > maximumFrames else {
             return [Self(frames: 0..<totalFrames, output: 0..<totalSamples)]
         }
-        let step = maximumFrames - 2 * contextFrames
+        let step = maximumFrames - 2 * context
         var windows: [Self] = []
         for start in stride(from: 0, to: totalFrames, by: step) {
             // Keep the tensor shape constant even at the sentence's ends. This
             // also avoids accumulating workspaces for many tail-window shapes.
-            let decodeStart = min(max(0, start - contextFrames), totalFrames - maximumFrames)
-            let outputStart = max(0, start * samplesPerFrame - blendSamples / 2)
+            let decodeStart = min(max(0, start - context), totalFrames - maximumFrames)
+            let outputStart = max(0, start * samplesPerFrame - blend / 2)
             let reachesEnd = decodeStart + maximumFrames == totalFrames
-            let outputEnd = reachesEnd ? totalSamples : (start + step) * samplesPerFrame + blendSamples / 2
+            let outputEnd = reachesEnd ? totalSamples : (start + step) * samplesPerFrame + blend / 2
             windows.append(Self(frames: decodeStart..<(decodeStart + maximumFrames), output: outputStart..<outputEnd))
             if reachesEnd { break }
         }

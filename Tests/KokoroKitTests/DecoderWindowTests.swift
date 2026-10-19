@@ -98,3 +98,25 @@ func featureWindowsRespectPaddedAndNoncontiguousTensors(timeStride: Int) throws 
         #expect(chunks.allSatisfy { $0.unicodeScalars.count <= limit && !$0.isEmpty })
     }
 }
+
+@Test func widerOverlapStillBoundsDecoderAndPreservesEverySample() {
+    for length in 1...1_100 {
+        let windows = DecoderWindow.plan(totalFrames: length, context: 40, blend: 2400)
+        #expect(windows.first?.output.lowerBound == 0)
+        #expect(windows.last?.output.upperBound == length * 600)
+        for (i, w) in windows.enumerated() {
+            #expect(w.frames.count <= 160)
+            #expect(w.output.lowerBound >= w.frames.lowerBound * 600)
+            #expect(w.output.upperBound <= w.frames.upperBound * 600)
+            if i > 0 { #expect(windows[i-1].output.upperBound - w.output.lowerBound == 2400) }
+        }
+    }
+    for length in [159, 160, 161, 240, 321, 553, 704] {
+        var samples: [Float] = []
+        for w in DecoderWindow.plan(totalFrames: length, context: 40, blend: 2400) {
+            DecoderWindow.append(w.output.map { sin(Float($0) * 0.02) }, at: w.output.lowerBound, to: &samples)
+        }
+        #expect(samples.count == length * 600)
+        #expect(samples.enumerated().allSatisfy { abs($0.element - sin(Float($0.offset) * 0.02)) < 0.000_001 })
+    }
+}

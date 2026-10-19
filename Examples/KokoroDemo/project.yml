@@ -11,6 +11,10 @@ targets:
     dependencies:
       - package: KokoroKit
         product: KokoroKit
+      - package: KokoroKit
+        product: KokoroNarration
+      - package: KokoroKit
+        product: KokoroAudio
     info:
       path: Info.plist
       properties:

@@ -15,9 +15,13 @@ public enum PronunciationLanguage: String, CaseIterable, Codable, Sendable {
 public struct PronunciationOptions: Sendable {
     public var britishEnglish: Bool
     public var spanishDialect: SpanishDialect
-    public init(britishEnglish: Bool = false, spanishDialect: SpanishDialect = .spain) {
+    /// Experimental lexical stress for derived Spanish -mente adverbs; off by default.
+    public var spanishAdverbDoubleStress: Bool
+    public init(britishEnglish: Bool = false, spanishDialect: SpanishDialect = .spain,
+                spanishAdverbDoubleStress: Bool = false) {
         self.britishEnglish = britishEnglish
         self.spanishDialect = spanishDialect
+        self.spanishAdverbDoubleStress = spanishAdverbDoubleStress
     }
 }
 
@@ -70,7 +74,7 @@ public final class PronunciationEngine {
                 return token.text.map { g2p(String($0)).phonemes }.filter { !$0.contains("❓") }
                     .joined(separator: " ") + token.whitespace
             }.joined()
-        case .spanish: raw = SpanishPhonemizer().phonemize(normalized, dialect: options.spanishDialect)
+        case .spanish: raw = SpanishPhonemizer().phonemize(normalized, dialect: options.spanishDialect, adverbDoubleStress: options.spanishAdverbDoubleStress)
         case .french: raw = FrenchPhonemizer().phonemize(normalized)
         case .italian: raw = ItalianPhonemizer().phonemize(normalized)
         case .portuguese: raw = PortuguesePhonemizer().phonemize(normalized)

@@ -40,3 +40,22 @@ The iOS example is generated with XcodeGen. CI builds it for a generic iOS desti
 On each supported device: listen for at least ten minutes, lock the screen, switch apps, pause/resume, and check memory/thermal behavior and cancellation. Record OS, device, voice and passage for pronunciation reports. Test unfamiliar names, long sentences and transitions. Japanese pitch accent, Mandarin polyphony, regional variation, ambiguous numeric contexts and unknown words remain areas for improvement.
 
 The engine does not own playback or audio-session lifecycle. Host applications must test those behaviors with their own queue and audio player.
+
+
+## Unreleased audiobook integration revision (2026-10-19)
+
+The development branch adds opt-in book planning/casting and bounded audio
+enhancement. Debug and Release package tests cover pronunciation contrasts,
+source-range preservation, cross-chapter cast persistence, unsupported-language
+attribution, input limits, chunk-independent DSP output and reduction limits.
+Ordinary package tests do not load model weights; optional renderer benchmarks
+still require external assets. The iOS demo links the narration and enhancement
+products so the generic-device build checks their platform compatibility too.
+
+The standalone medium-model device experiment is preserved under
+`Benchmarks/Narration/MediumDevice`. Its pinned source and manifests are public;
+generated WAVs, downloaded models, device reports and signing details are not.
+The measured short-run results and limits are summarized in
+[narration-quality-tiers.md](narration-quality-tiers.md). They do not qualify
+Librox's new integration or untested iPads/phones. This commit is not a tagged
+library release, an app release or a TestFlight upload.

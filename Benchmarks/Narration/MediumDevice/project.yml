@@ -1,0 +1,42 @@
+name: MediumNarrationBench
+packages:
+  MLXAudio:
+    url: https://github.com/Blaizzy/mlx-audio-swift
+    revision: d302a5c6080d2bb97bae38c7418f82abb76013b6
+  MLX:
+    url: https://github.com/ml-explore/mlx-swift.git
+    exactVersion: 0.31.6
+targets:
+  MediumNarrationBench:
+    type: application
+    platform: iOS
+    deploymentTarget: '26.0'
+    sources: [Sources, Resources]
+    dependencies:
+      - package: MLXAudio
+        product: MLXAudioTTS
+      - package: MLX
+        product: MLX
+      - package: MLX
+        product: MLXRandom
+    entitlements:
+      path: MediumNarrationBench.entitlements
+      properties:
+        com.apple.developer.background-tasks.continued-processing.gpu: true
+        com.apple.developer.kernel.increased-memory-limit: true
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIBackgroundModes: [audio, processing]
+        BGTaskSchedulerPermittedIdentifiers: ['com.section9labs.KokoroNarrationBench.medium.*']
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.section9labs.KokoroNarrationBench
+        SWIFT_VERSION: '6.0'
+        TARGETED_DEVICE_FAMILY: '1,2'
+        CURRENT_PROJECT_VERSION: 2
+        MARKETING_VERSION: 0.1
+        CODE_SIGN_STYLE: Automatic

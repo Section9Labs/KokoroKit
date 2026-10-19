@@ -65,6 +65,8 @@ public actor KokoroEngine {
     private let pronunciationPolicy: PronunciationPolicy
     private let rendererPolicy: RendererPolicy
     private var model: DynamicCoreMLModel?
+    private var narrationExperiment = false
+    private var experimentalHarmonicSourceURL: URL?
     private var voices: [String: VoicePack] = [:]
     private var phonemizer = Phonemizer()
     private var independentPhonemizer: PronunciationEngine?
@@ -90,8 +92,57 @@ public actor KokoroEngine {
             case .fixedSize(let directory): fixedDirectory = directory
             }
             return try DynamicCoreMLModel(directory: directory,
-                computeUnits: policy == .cpuOnly ? .cpuOnly : .all, fixedDecoderDirectory: fixedDirectory)
+                computeUnits: policy == .cpuOnly ? .cpuOnly : .all, fixedDecoderDirectory: fixedDirectory,
+                harmonicSourceURL: experimentalHarmonicSourceURL, narrationExperiment: narrationExperiment)
         }
+    }
+
+    /// Local benchmark only. Loading the candidate explicitly never changes the default renderer.
+    /// Keeps inference CPU-only and retains the 160-frame decoder limit.
+    @_spi(NarrationBenchmark)
+    public func useExperimentalHarmonicSource(at url: URL) throws {
+        guard case .fixedSize = rendererPolicy else { throw SynthesisError.invalidDecoderAssets }
+        unload()
+        experimentalHarmonicSourceURL = url
+        narrationExperiment = false
+    }
+
+    /// Benchmark-only matching of the wider-overlap, half-voiced-noise candidate.
+    @_spi(NarrationBenchmark)
+    public func useNarrationExperiment(at sourceURL: URL) throws {
+        try useExperimentalHarmonicSource(at: sourceURL)
+        narrationExperiment = true
+    }
+
+    /// Checked prepared input avoids silently changing the listening experiment's
+    /// pronunciation or voice style row in the physical-device memory run.
+    @_spi(NarrationBenchmark)
+    public func synthesizePreparedNarration(_ phonemes: String, voiceID: String,
+                                            styleRow: Int, speed: Float = 1) throws -> Audio {
+        try Task.checkCancellation()
+        guard narrationExperiment, case .fixedSize = rendererPolicy else { throw SynthesisError.invalidDecoderAssets }
+        guard Voice.named(voiceID) != nil else { throw SynthesisError.unknownVoice }
+        guard speed.isFinite, (0.5...2).contains(speed) else { throw SynthesisError.invalidSpeed }
+        guard (1...510).contains(phonemes.unicodeScalars.count), (0...510).contains(styleRow) else {
+            throw SynthesisError.segmentTooLong
+        }
+        try load()
+        guard let model, phonemes.unicodeScalars.allSatisfy({ model.vocab[String($0)] != nil }),
+              phonemes.contains(where: { !$0.isWhitespace && !$0.isPunctuation }) else {
+            throw SynthesisError.unsupportedPronunciation
+        }
+        let pack: VoicePack
+        if let cached = voices[voiceID] { pack = cached }
+        else {
+            pack = try VoicePack(data: Data(contentsOf: directory.appendingPathComponent("voices/\(voiceID).bin")))
+            voices = [voiceID: pack]
+        }
+        let samples = try autoreleasepool {
+            try model.forward(phonemes: phonemes, refS: pack.style(phonemeCount: styleRow), speed: speed).audio
+        }
+        guard !samples.isEmpty, samples.allSatisfy({ $0.isFinite && abs($0) <= 1 }),
+              samples.contains(where: { abs($0) > 0.00001 }) else { throw SynthesisError.invalidAudio }
+        return Audio(samples: samples, sampleRate: Self.sampleRate)
     }
 
     public func unload() {

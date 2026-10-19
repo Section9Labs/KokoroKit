@@ -9,16 +9,21 @@ final class DynamicCoreMLModel {
     private let frontend: MLModel
     private let backend: DecoderBackend
     private let usesFixedDecoder: Bool
+    private let narrationExperiment: Bool
+    private let harmonicSource: ExperimentalHarmonicSource?
     let vocab: [String: Int]
     static let maxPhonemeCount = 510
 
-    init(directory: URL, computeUnits: MLComputeUnits, fixedDecoderDirectory: URL? = nil) throws {
+    init(directory: URL, computeUnits: MLComputeUnits, fixedDecoderDirectory: URL? = nil,
+         harmonicSourceURL: URL? = nil, narrationExperiment: Bool = false) throws {
+        self.narrationExperiment = narrationExperiment
         guard let url = Bundle.module.url(forResource: "vocab", withExtension: "json") else {
             throw CocoaError(.fileNoSuchFile)
         }
         vocab = try JSONDecoder().decode([String: Int].self, from: Data(contentsOf: url))
         let config = MLModelConfiguration()
         config.computeUnits = .cpuOnly
+        harmonicSource = try harmonicSourceURL.map { try ExperimentalHarmonicSource(url: $0, halfVoicedNoise: narrationExperiment) }
         frontend = try MLModel(contentsOf: directory.appendingPathComponent("kokoro_frontend.mlmodelc"), configuration: config)
         usesFixedDecoder = fixedDecoderDirectory != nil
         backend = try DecoderBackend(directory: directory, computeUnits: computeUnits, fixedDirectory: fixedDecoderDirectory)
@@ -57,7 +62,10 @@ final class DynamicCoreMLModel {
               features["har"]?.shape.last?.intValue == frames * 120 + 1 else {
             throw SynthesisError.invalidAudio
         }
-        let windows = DecoderWindow.plan(totalFrames: frames)
+        if let harmonicSource, let pitch = features["F0_pred"] {
+            features["har"] = try autoreleasepool { try harmonicSource.predict(pitch: pitch) }
+        }
+        let windows = DecoderWindow.plan(totalFrames: frames, context: narrationExperiment ? 40 : 20, blend: narrationExperiment ? 2400 : 480)
         var samples: [Float] = []
         samples.reserveCapacity(valid)
         for window in windows {

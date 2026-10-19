@@ -1,0 +1,37 @@
+name: NarrationBench
+packages:
+  KokoroKit:
+    path: ../../..
+targets:
+  NarrationBench:
+    type: application
+    platform: iOS
+    deploymentTarget: '18.0'
+    sources:
+      - Sources
+      - path: ../automatic-corpus.json
+        buildPhase: resources
+      - path: ../reading-corpus.json
+        buildPhase: resources
+      - path: ../corpus.json
+        buildPhase: resources
+    dependencies:
+      - package: KokoroKit
+        product: KokoroKit
+      - package: KokoroKit
+        product: KokoroPronunciation
+      - package: KokoroKit
+        product: KokoroAudio
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIBackgroundModes: [audio]
+        UIFileSharingEnabled: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.section9labs.KokoroNarrationBench
+        SWIFT_VERSION: '6.0'
+        TARGETED_DEVICE_FAMILY: '1,2'
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1
