@@ -5,6 +5,7 @@ let package = Package(
     name: "KokoroKit",
     platforms: [.macOS(.v13), .iOS(.v17), .macCatalyst(.v17)],
     products: [
+        .library(name: "QwenANE", targets: ["QwenANE"]),
         .library(name: "KokoroKit", targets: ["KokoroKit"]),
         .library(name: "KokoroCatalog", targets: ["KokoroCatalog"]),
         .library(name: "KokoroPronunciation", targets: ["KokoroPronunciation"]),
@@ -14,6 +15,8 @@ let package = Package(
         .executable(name: "pronunciation-probe", targets: ["PronunciationProbe"]),
     ],
     targets: [
+        .testTarget(name: "QwenANETests", dependencies: ["QwenANE"]),
+        .target(name: "QwenANE", exclude: ["PROVENANCE.md"], resources: [.copy("Resources/TinyTrashLabs-LICENSE.txt")]),
         .systemLibrary(name: "CZlib"),
         .target(name: "KokoroAudio"),
         .target(name: "KokoroNarration", dependencies: ["KokoroCatalog", "KokoroPronunciation"]),
