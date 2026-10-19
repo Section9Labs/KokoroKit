@@ -49,6 +49,18 @@ public struct BookVoiceCast: Codable, Sendable, Equatable {
         try validate()
     }
 
+    /// Explicit narrator correction preserves every character and alias. The old
+    /// narrator becomes an available character voice; nobody is silently recast.
+    public func replacingNarrator(with voiceID: String) throws -> Self {
+        guard voiceID == narratorVoiceID || voicePool.contains(voiceID) else { throw CastError.invalidState }
+        var replacement = try Self(bookID: bookID, language: language, narratorVoiceID: voiceID,
+            voicePool: (voicePool + [narratorVoiceID]).filter { $0 != voiceID }, styleRow: styleRow,
+            voiceGenders: voiceGenders, voiceSharing: voiceSharing)
+        replacement.characters = characters; replacement.aliases = aliases
+        try replacement.validate()
+        return replacement
+    }
+
     public var characterVoices: [String: String] {
         Dictionary(uniqueKeysWithValues: characters.compactMap { c in c.voiceID.map { (c.id, $0) } })
     }

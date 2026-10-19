@@ -177,3 +177,18 @@ private func analyze(_ text: String, _ cast: inout BookVoiceCast, chapter: Strin
     #expect(first.characters[0].voiceID == "em_alex")
     #expect(second.characters[0].voiceID == "ef_dora")
 }
+
+@Test func narratorCorrectionPreservesBookIdentities() throws {
+    var cast = try BookVoiceCast(bookID: "correction", language: .spanish, narratorVoiceID: "em_santa",
+        voicePool: ["ef_dora", "em_alex"], voiceGenders: ["em_santa": .male, "ef_dora": .female, "em_alex": .male],
+        voiceSharing: .reuseCompatible)
+    _ = try SpeakerAttributor().analyze("—Volveré mañana —dijo Elena.", bookID: "correction", chapterID: "1", cast: &cast)
+    let corrected = try cast.replacingNarrator(with: "em_alex")
+    #expect(corrected.narratorVoiceID == "em_alex")
+    #expect(corrected.characters == cast.characters)
+    #expect(corrected.aliases == cast.aliases)
+    #expect(corrected.characterVoices == cast.characterVoices)
+    #expect(!corrected.voicePool.contains("em_alex"))
+    #expect(corrected.voicePool.contains("em_santa"))
+    #expect(try BookVoiceCast.restore(corrected.encoded(), bookID: "correction") == corrected)
+}

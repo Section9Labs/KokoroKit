@@ -62,3 +62,18 @@ exported assets. Qwen 0.6B/1.7B code is currently in the standalone benchmark,
 not a supported production library renderer. Mac builds and pure unit tests do
 not establish iPhone memory, thermals, uninterrupted playback or background GPU
 support. See the model-specific [quality-tier evidence](narration-quality-tiers.md).
+
+## Explicit renderer and narrator configuration
+
+Hosts can configure `KokoroEngine.NarrationConfiguration(harmonicSource:frontend:)`
+with a compiled harmonic source and, optionally, a compiled full-precision
+frontend. Use the fixed-size decoder policy; decoder windows remain bounded to
+160 frames. `synthesizeNarration` consumes the planner's phonemes, validates the
+510-token boundary and uses a stable style row (158 by default). Oversized units
+must be split by the text renderer, never truncated. All assets are host supplied;
+this configuration does not download or activate models implicitly.
+
+`BookVoiceCast.replacingNarrator(with:)` is an explicit correction that preserves
+character IDs, aliases and assigned voices. Do not call it automatically when a
+global preference changes. Persist the corrected cast before preparing audio and
+include the selected voice and pronunciation in prepared-audio cache identities.

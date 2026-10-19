@@ -63,6 +63,15 @@ public actor KokoroEngine {
     private let directory: URL
     private let policy: ComputePolicy
     private let pronunciationPolicy: PronunciationPolicy
+    /// Explicit audiobook assets. The compact renderer remains the default.
+    public struct NarrationConfiguration: Sendable {
+        public let harmonicSource: URL
+        public let frontend: URL?
+        public init(harmonicSource: URL, frontend: URL? = nil) {
+            self.harmonicSource = harmonicSource; self.frontend = frontend
+        }
+    }
+    private let frontendURL: URL?
     private let rendererPolicy: RendererPolicy
     private var model: DynamicCoreMLModel?
     private var narrationExperiment = false
@@ -73,15 +82,22 @@ public actor KokoroEngine {
 
     public init(modelDirectory: URL, computePolicy: ComputePolicy = .cpuOnly,
                 pronunciationPolicy: PronunciationPolicy = .established,
-                rendererPolicy: RendererPolicy = .established) {
+                rendererPolicy: RendererPolicy = .established,
+                narration: NarrationConfiguration? = nil) {
         directory = modelDirectory
         policy = computePolicy
         self.pronunciationPolicy = pronunciationPolicy
         self.rendererPolicy = rendererPolicy
+        frontendURL = narration?.frontend
+        experimentalHarmonicSourceURL = narration?.harmonicSource
+        narrationExperiment = narration != nil
     }
 
     public func load() throws {
         guard model == nil else { return }
+        if narrationExperiment {
+            guard case .fixedSize = rendererPolicy else { throw SynthesisError.invalidDecoderAssets }
+        }
         guard #available(iOS 18, macCatalyst 18, macOS 15, *) else {
             throw SynthesisError.unsupportedPlatform
         }
@@ -93,7 +109,7 @@ public actor KokoroEngine {
             }
             return try DynamicCoreMLModel(directory: directory,
                 computeUnits: policy == .cpuOnly ? .cpuOnly : .all, fixedDecoderDirectory: fixedDirectory,
-                harmonicSourceURL: experimentalHarmonicSourceURL, narrationExperiment: narrationExperiment)
+                harmonicSourceURL: experimentalHarmonicSourceURL, narrationExperiment: narrationExperiment, frontendURL: frontendURL)
         }
     }
 
@@ -112,6 +128,13 @@ public actor KokoroEngine {
     public func useNarrationExperiment(at sourceURL: URL) throws {
         try useExperimentalHarmonicSource(at: sourceURL)
         narrationExperiment = true
+    }
+
+    /// Render a bounded unit from BookNarrationPlanner with the configured
+    /// audiobook renderer. The caller retains source offsets and voice identity.
+    public func synthesizeNarration(_ phonemes: String, voiceID: String,
+                                   styleRow: Int = 158, speed: Float = 1) throws -> Audio {
+        try synthesizePreparedNarration(phonemes, voiceID: voiceID, styleRow: styleRow, speed: speed)
     }
 
     /// Checked prepared input avoids silently changing the listening experiment's
