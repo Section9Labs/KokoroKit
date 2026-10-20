@@ -17,11 +17,13 @@ final class NarratorIntegrationTests: XCTestCase {
         let out = URL(fileURLWithPath: outputPath)
         try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
         let started = Date()
-        try await narrator.load(modelsDirectory: URL(fileURLWithPath: model), references: ["ef_dora": .init(samples: samples,
-            text: "El reloj de la torre dio las nueve. La lluvia había cesado y el aire olía a tierra mojada. Clara dejó el libro junto a la ventana, cerró los ojos y recordó la voz de su madre.", language: "Spanish")],
+        let references: [String: QwenNarrator.Reference] = ["ef_dora": .init(samples: samples,
+            text: "El reloj de la torre dio las nueve. La lluvia había cesado y el aire olía a tierra mojada. Clara dejó el libro junto a la ventana, cerró los ojos y recordó la voz de su madre.", language: "Spanish")]
+        try await narrator.load(modelsDirectory: URL(fileURLWithPath: model), references: references,
             cacheDirectory: out.appendingPathComponent("voices"))
         print("ANE loadSeconds=\(Date().timeIntervalSince(started))")
-        let result = try await narrator.render("La casa estaba en silencio cuando Elena regresó. Tras la ventana, la lluvia borraba el contorno de las colinas. Dejó la carta sin abrir junto a la lámpara y esperó. En el piso de arriba, una tabla crujió. Esta vez estaba segura de haberlo oído.", voiceID: "ef_dora")
+        let passage = "La casa estaba en silencio cuando Elena regresó. Tras la ventana, la lluvia borraba el contorno de las colinas. Dejó la carta sin abrir junto a la lámpara y esperó. En el piso de arriba, una tabla crujió. Esta vez estaba segura de haberlo oído."
+        let result = try await narrator.render(passage, voiceID: "ef_dora")
         XCTAssertFalse(result.samples.isEmpty)
         XCTAssertTrue(result.samples.allSatisfy { $0.isFinite && abs($0) <= 1 })
         XCTAssertFalse(result.stopReasons.contains("maxTokens"))
@@ -32,6 +34,21 @@ final class NarratorIntegrationTests: XCTestCase {
         pcm.frameLength = pcm.frameCapacity
         result.samples.withUnsafeBufferPointer { pcm.floatChannelData![0].update(from: $0.baseAddress!, count: $0.count) }
         try output.write(from: pcm)
+        await narrator.unload()
+        // Serial part delivery must preserve the previous whole-passage audio
+        // and the carried voice context, without waiting for the last part.
+        try await narrator.load(modelsDirectory: URL(fileURLWithPath: model), references: references,
+            cacheDirectory: out.appendingPathComponent("voices"))
+        var joined: [Float] = []
+        for (index, part) in try QwenReadRules.splitWithRanges(passage).enumerated() {
+            let rendered = try await narrator.render(part.text, voiceID: "ef_dora")
+            joined.append(contentsOf: rendered.samples)
+            print("ANE part=\(index) generateSeconds=\(rendered.generationSeconds) audioSeconds=\(Double(rendered.samples.count) / 24000)")
+        }
+        XCTAssertEqual(joined.count, result.samples.count)
+        let difference = zip(joined, result.samples).map { abs($0 - $1) }.max() ?? 0
+        XCTAssertLessThanOrEqual(difference, 0.00001, "Part delivery changed narration audio")
+        print("ANE partParityMaxDifference=\(difference)")
         await narrator.unload()
     }
 }

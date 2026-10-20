@@ -84,15 +84,11 @@ public actor QwenNarrator {
             try Task.checkCancellation()
             let output = try session.render(part, cancelled: {
                 Task.isCancelled || ProcessInfo.processInfo.thermalState == .critical || !Self.hasHeadroom
-            }, pace: {
-                // Deliberately yield between codec frames, off the UI actor.
-                // At 12.5 frames/s these pauses add at most 10% to audio-time cost.
-                switch ProcessInfo.processInfo.thermalState {
-                case .fair: usleep(4_000)
-                case .serious: usleep(8_000)
-                default: break
-                }
             })
+            // The playback owner bounds render-ahead and rests between parts
+            // once its queue is full. Do not sleep per frame while audio is
+            // waiting: under load that worsens buffer starvation. Critical
+            // temperature and memory limits still stop rendering above.
             if ProcessInfo.processInfo.thermalState == .critical { throw Failure.thermal }
             guard Self.hasHeadroom else { throw Failure.unsafeMemory }
             try Task.checkCancellation()
