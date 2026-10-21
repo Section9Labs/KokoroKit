@@ -51,7 +51,7 @@ public enum PronunciationError: Error, Equatable { case inputTooLong(limit: Int)
 /// This type deliberately does not claim Sendable: its NLP tagger has mutable state.
 public final class PronunciationEngine {
     /// Include in prepared-audio cache keys alongside text, voice and options.
-    public static let pipelineRevision = "independent-pronunciation-2"
+    public static let pipelineRevision = "independent-pronunciation-3"
     public static let maximumInputScalars = 16_384
     private var english: G2P?
     private var british: Bool?

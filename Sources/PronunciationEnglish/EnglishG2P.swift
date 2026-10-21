@@ -181,6 +181,34 @@ public final class G2P {
             return true
         }
 
+        // NLTagger may split a lexicalized loan compound into word / dash /
+        // word. Preserve its contiguous spelling before dash punctuation is
+        // assigned a pause. This reviewed whole-word entry must not license
+        // a pronunciation for either isolated fragment or a spaced dash.
+        var compoundSlices: [Slice] = []
+        for slice in slices {
+            if compoundSlices.count >= 2 {
+                let left = compoundSlices[compoundSlices.count - 2]
+                let dash = compoundSlices[compoundSlices.count - 1]
+                let combinedRange = left.range.lowerBound..<slice.range.upperBound
+                if left.range.upperBound == dash.range.lowerBound,
+                   dash.range.upperBound == slice.range.lowerBound,
+                   text[dash.range] == "-",
+                   text[combinedRange].lowercased() == "pince-nez",
+                   featureSpans.allSatisfy({ feature in
+                       !feature.range.overlaps(combinedRange)
+                           || (feature.range.lowerBound <= combinedRange.lowerBound
+                               && feature.range.upperBound >= combinedRange.upperBound)
+                   }) {
+                    compoundSlices.removeLast(2)
+                    compoundSlices.append(Slice(range: combinedRange, tag: "NN"))
+                    continue
+                }
+            }
+            compoundSlices.append(slice)
+        }
+        slices = compoundSlices
+
         var tokens: [MToken] = []
         tokens.reserveCapacity(slices.count)
 

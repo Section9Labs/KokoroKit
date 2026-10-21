@@ -34,9 +34,9 @@ import KokoroPronunciation
 }
 
 @Test func conversationRealExpressionFixturePreservesWhitespace() async throws {
-    let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
     for (key, voice, language) in [("en", "af_heart", PronunciationLanguage.english), ("es", "ef_dora", .spanish)] {
-        let text = try String(contentsOf: root.appendingPathComponent("Experiments/DialogueTimingRounds/\(key)-expressions.txt"), encoding: .utf8)
+        let fixture = try #require(Bundle.module.url(forResource: "\(key)-expressions", withExtension: "txt"))
+        let text = try String(contentsOf: fixture, encoding: .utf8)
         let cast = try BookVoiceCast(bookID: "fixture", language: language, narratorVoiceID: voice, voicePool: [])
         for policy in [BookNarrationProsody.sourceContext, .conversationContext] {
             let plan = try await BookNarrationPlanner().plan(text, chapterID: "1", cast: cast, prosody: policy)

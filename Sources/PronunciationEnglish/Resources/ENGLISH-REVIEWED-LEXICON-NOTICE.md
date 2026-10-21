@@ -15,8 +15,8 @@ French, Spanish, or other foreign-language dictionaries.
   readings. British pronunciations are never converted or reused as US audio
   input. These entries take priority over the CMU supplement, not over the
   established gold/silver dictionaries.
-- `gb_loans.json`: 34 English spellings with British English readings.
-- `us_loans.json`: 22 English spellings with US English readings.
+- `gb_loans.json`: 35 English spellings with British English readings.
+- `us_loans.json`: 23 English spellings with US English readings.
 
 The loanword lists retain conventional spellings such as café, naïve, façade,
 résumé, cliché, fiancée, and soufflé. Straightforward spelling equivalents use
@@ -77,3 +77,7 @@ uppercase names and possessives, acronym/initialism preservation, accented
 English words and plurals, résumé/resume, contextual lexicon priority, and the
 continued distinction between an English loanword and an actual French phrase.
 Native listening acceptance and exhaustive lexical coverage remain open.
+
+The later `pince-nez` whole-word addition and bounded adjective-grade fallback
+are documented in `ENGLISH-REGULAR-INFLECTION-AUDIT.md`, including primary
+references, exact resource counts, remaining unknown names, and regression scope.

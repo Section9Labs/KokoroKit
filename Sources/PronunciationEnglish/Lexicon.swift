@@ -545,6 +545,40 @@ public final class Lexicon {
         return (ingSuffix(stemPhonemes), rating)
     }
 
+    // A bounded grade fallback: dictionary membership alone does not establish
+    // that a stem is an adjective (e.g. a name or an acronym ending in -er).
+    // These reviewed regular adjectives have actual US/GB coverage gaps. Keep
+    // gold/silver/supplement entries authoritative, including irregular forms.
+    // See Resources/ENGLISH-REGULAR-INFLECTION-AUDIT.md for evidence and limits.
+    private static let regularComparisonStems: Set<String> = [
+        "cruel", "happy", "lovely", "poor", "sincere", "ugly", "unkind", "unwise"
+    ]
+
+    func stemComparison(_ word: String, stress: Double?, ctx: TokenContext) -> (String?, Int?) {
+        guard word == word.lowercased() || isTitleCaseWord(word),
+              !isAllUppercase(word), word.allSatisfy(isAsciiLetter) else { return (nil, nil) }
+        let lower = word.lowercased()
+        let superlative = lower.hasSuffix("est")
+        guard superlative || lower.hasSuffix("er") else { return (nil, nil) }
+        let base = String(lower.dropLast(superlative ? 3 : 2))
+        var candidates = [base, base + "e"]
+        if base.hasSuffix("i") { candidates.append(String(base.dropLast()) + "y") }
+        guard let stem = candidates.first(where: { Self.regularComparisonStems.contains($0) }),
+              stem != "sincere" || superlative else { return (nil, nil) }
+        let inflectionBase = stem.hasSuffix("e") ? String(stem.dropLast())
+            : stem.hasSuffix("y") ? String(stem.dropLast()) + "i" : stem
+        guard base == inflectionBase,
+              // Use the adjective's existing dialect reading, never letter names.
+              let phonemes = lookup(stem, tag: "JJ", stress: stress, ctx: ctx).0,
+              phonemes.contains(primaryStress) else { return (nil, nil) }
+        // Non-rhotic stems recover linking r before the vowel-initial suffix:
+        // poor -> poorer, sincere -> sincerest. US stems already retain /r/.
+        let linkingR = british && (stem.hasSuffix("r") || stem.hasSuffix("re"))
+            && !phonemes.hasSuffix("ɹ") ? "ɹ" : ""
+        let suffix = superlative ? (british ? "ɪst" : "ᵻst") : (british ? "ə" : "əɹ")
+        return (phonemes + linkingR + suffix, 2)
+    }
+
     func getWord(_ word: String, tag: String?, stress: Double?, ctx: TokenContext) -> (String?, Int?) {
         let (specialCasePhonemes, specialCaseRating) = getSpecialCase(word, tag: tag, stress: stress, ctx: ctx)
         if specialCasePhonemes != nil {
@@ -600,7 +634,7 @@ public final class Lexicon {
         let ingResult = stemING(lookupWord, tag: tag, stress: ingStress, ctx: ctx)
         if ingResult.0 != nil { return ingResult }
 
-        return (nil, nil)
+        return stemComparison(lookupWord, stress: stress, ctx: ctx)
     }
 
     public static func isCurrency(_ word: String) -> Bool {
