@@ -4,7 +4,7 @@ import AVFoundation
 import CoreML
 import Foundation
 import Testing
-@testable import KokoroKit
+@testable import LibroxTTS
 
 // Mac-only, opt-in laboratory harness. Production defaults are untouched.
 // Separate prepare/render processes avoid retaining frontend memory in decoder comparisons.

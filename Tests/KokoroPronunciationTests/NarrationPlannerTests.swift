@@ -54,6 +54,8 @@ import Testing
     #expect(units.map(\.boundaryAfter) == [.paragraph, .paragraph, .continuation])
     #expect(try planner.plan("«No».", language: .spanish).last?.boundaryAfter == .sentence)
     #expect(try planner.plan("«¿Quién?»", language: .spanish).last?.boundaryAfter == .sentence)
+    #expect(try planner.plan("「本当ですか？」", language: .japanese).last?.boundaryAfter == .sentence)
+    #expect(try planner.plan("『待って！』", language: .japanese).last?.boundaryAfter == .sentence)
     #expect(try planner.plan("Wait…”, she said.", language: .english).last?.boundaryAfter == .sentence)
 }
 

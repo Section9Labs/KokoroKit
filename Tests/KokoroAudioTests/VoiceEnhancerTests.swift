@@ -112,4 +112,39 @@ struct VoiceEnhancerTests {
         #expect(zip(input, output).allSatisfy { abs($0 - $1) < 2e-6 })
         #expect(filter.maximumReductionDB < 0.001)
     }
+
+    @Test func speechSmoothLimitsAttenuationWithoutStableVoicing() throws {
+        var seed: UInt64 = 41
+        let noise: [Float] = (0..<48000).map { _ in
+            seed = seed &* 6364136223846793005 &+ 1
+            return Float(Double(seed >> 11) / 9007199254740992.0 - 0.5) * 0.2
+        }
+        let smooth = try VoiceEnhancer(preset: .speechSmooth)
+        let control = try VoiceEnhancer(preset: .balanced)
+        let candidate = try render(noise, with: smooth)
+        let baseline = try render(noise, with: control)
+        #expect(smooth.harmonicActiveFrames == 0)
+        #expect(smooth.maximumReductionDB <= 1.751)
+        #expect(candidate.reduce(0.0) { $0 + Double($1 * $1) } >
+                baseline.reduce(0.0) { $0 + Double($1 * $1) })
+        // This checks the guard, not real-consonant intelligibility.
+    }
+
+    @Test func speechSmoothKeepsFundamentalAndBoundsVoicedReduction() throws {
+        let input = signal(48000)
+        let filter = try VoiceEnhancer(preset: .speechSmooth)
+        let output = try render(input, with: filter)
+        #expect(filter.harmonicActiveFrames > 0)
+        #expect(filter.maximumReductionDB <= 7)
+        func fundamental(_ samples: [Float]) -> Double {
+            var real = 0.0, imaginary = 0.0
+            for i in 12000..<36000 {
+                let angle = 2 * Double.pi * 173 * Double(i) / 24000
+                real += Double(samples[i]) * cos(angle)
+                imaginary += Double(samples[i]) * sin(angle)
+            }
+            return hypot(real, imaginary)
+        }
+        #expect(abs(20 * log10(fundamental(output) / fundamental(input))) < 0.05)
+    }
 }

@@ -1,28 +1,28 @@
-# KokoroKit
+# LibroxTTS
 
-Offline Kokoro-82M speech synthesis for iPhone, iPad and Mac. Swift, Core ML, **54 voices across eight languages**, and a separately importable pronunciation frontend. No Python, MLX or eSpeak runtime is required.
+Offline speech synthesis and book narration for iPhone, iPad and Mac. The Kokoro renderer provides **54 voices across eight languages**, with shared pronunciation, narration planning and voice cleanup. Basic and Enhanced use the same pronunciation corrections. The Kokoro path requires no Python, MLX or eSpeak runtime.
 
-[![Swift](https://github.com/Section9Labs/KokoroKit/actions/workflows/swift.yml/badge.svg)](https://github.com/Section9Labs/KokoroKit/actions/workflows/swift.yml)
+[![Swift](https://github.com/Section9Labs/LibroxTTS/actions/workflows/swift.yml/badge.svg)](https://github.com/Section9Labs/LibroxTTS/actions/workflows/swift.yml)
 
 ## Install
 
-Add `https://github.com/Section9Labs/KokoroKit` in Xcode, or use Swift Package Manager:
+The repository is now `https://github.com/Section9Labs/LibroxTTS`. The module rename and narration improvements are currently unreleased. To test this checkout, add it as a local package in Xcode, or use:
 
 ```swift
-.package(url: "https://github.com/Section9Labs/KokoroKit.git", from: "0.1.0")
+.package(path: "../LibroxTTS")
 ```
 
-Products: `KokoroKit` (synthesis), `KokoroCatalog` (voices/assets), and `KokoroPronunciation` (text to model phonemes). There are no remote Swift dependencies. Swift 6 is required. Source targets support iOS/Catalyst 17+ and macOS 13+; the supplied Core ML assets require **iOS/Catalyst 18+ and macOS 15+**. Apple system language facilities are required, so Linux is not supported.
+Products: `LibroxTTS` (synthesis), `KokoroCatalog` (voices/assets), and `KokoroPronunciation` (text to model phonemes). There are no remote Swift dependencies. Swift 6 is required. Source targets support iOS/Catalyst 17+ and macOS 13+; the supplied Core ML assets require **iOS/Catalyst 18+ and macOS 15+**. Apple system language facilities are required, so Linux is not supported.
 
-The development branch also provides `KokoroNarration` (book planning and persistent cast metadata) and `KokoroAudio` (bounded voice enhancement). They are opt-in and are **not part of the v0.1.0 tag above**. Consumers testing them should pin an exact reviewed commit with SwiftPM's `revision:` requirement. Neither module changes the default synthesis engine or silently enables effects.
+The development branch also provides `KokoroNarration` (book planning and persistent cast metadata) and `KokoroAudio` (bounded voice enhancement). They are opt-in. The historical v0.1.0 tag still uses the old module name and does not include this development API; it must not be used with the examples below. Remote consumers should pin a reviewed commit containing the rename once it is published. Neither module changes the default synthesis engine or silently enables effects.
 
-See [the narrator integration API](docs/book-planning.md), [casting rules](docs/story-narrator.md), and [enhancement API and validation limits](docs/audio-enhancement.md). Qwen experiments remain standalone benchmark tools; no MLX dependency is added to these library products.
+See [the narrator integration API](docs/book-planning.md), [casting rules](docs/story-narrator.md), and [enhancement API and validation limits](docs/audio-enhancement.md). The optional, separately imported `QwenANE` product retains the Qwen renderer work; its existence does not establish device eligibility or sustained background performance. No MLX dependency is added to these library products. Rejected model auditions are not app dependencies.
 
 ## Speak
 
 ```swift
 import Foundation
-import KokoroKit
+import LibroxTTS
 
 let directory = URL.applicationSupportDirectory.appending(path: "KokoroModels")
 // Explicit one-time download (~499 MB; ~538 MB installed).

@@ -46,6 +46,12 @@ public struct QwenTimings: Sendable, Equatable {
     public var vocoderWait: Double
     /// Whole `render` call.
     public var total: Double
+    /// Decode model calls within loop, excluding the first step counted in prefill.
+    public var decode: Double = 0
+    /// Code-predictor calls within loop.
+    public var predictor: Double = 0
+    /// Frame delivery/pacing within loop, including any backpressure.
+    public var delivery: Double = 0
 }
 
 /// The result of one rendered line.
@@ -218,11 +224,13 @@ public final class QwenANEEngine: @unchecked Sendable {
 
     /// Loads host tables, the vocoder head and the compiled Core ML models (`.mlmodelc`).
     /// The vocoder loads first: the Core ML models before anything that maps big files.
-    public init(modelsDirectory: URL) throws {
+    /// Fixed-shape specialization is opt-in until device performance and output
+    /// parity are qualified. It may increase preparation time and memory.
+    public init(modelsDirectory: URL, optimizeForPrediction: Bool = false) throws {
         self.modelsDirectory = modelsDirectory
         host = try HostTables(dir: modelsDirectory.appendingPathComponent("host").path)
         vocoder = try ANEVocoder(modelsDirectory: modelsDirectory)
-        talker = try ANETalkerEngine(coreMLDirectory: modelsDirectory.appendingPathComponent("coreml"), host: host)
+        talker = try ANETalkerEngine(coreMLDirectory: modelsDirectory.appendingPathComponent("coreml"), host: host, optimizeForPrediction: optimizeForPrediction)
     }
 
     /// Reads `voices/<name>/{voice.json, ref_codes.npy, spk_embed.npy}` from the models directory.
@@ -323,7 +331,8 @@ public final class QwenANEEngine: @unchecked Sendable {
             QwenRender(samples: wav, sampleRate: sampleRate, frames: n, codes: codes, stopReason: stop,
                        timings: QwenTimings(prompt: promptS, prefill: g.prefillWall,
                                             loop: overlapped ? g.loopWall : max(0, g.loopWall - voc.wall),
-                                            vocoder: voc.wall, vocoderWait: voc.waitWall, total: Date().timeIntervalSince(t0)))
+                                            vocoder: voc.wall, vocoderWait: voc.waitWall, total: Date().timeIntervalSince(t0),
+                                            decode: g.decodeWall, predictor: g.predictorWall, delivery: g.deliveryWall))
         }
         guard n > 0, g.stop != .cancelled else { voc.drain(); n = 0; return result([], g.stop, []) }
         pace()

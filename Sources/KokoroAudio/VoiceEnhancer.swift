@@ -25,6 +25,9 @@ public final class VoiceEnhancer {
         case harmonicGentle
         /// Balanced plus confidence-gated inter-harmonic attenuation. Experimental.
         case harmonicBalanced
+        /// Experimental stronger voiced-texture reduction with less broad
+        /// attenuation on low-confidence/unvoiced frames. Not pitch correction.
+        case speechSmooth
     }
 
     public enum ProcessingError: Error {
@@ -64,8 +67,8 @@ public final class VoiceEnhancer {
     private var selectiveGain = [Float](repeating: 0, count: bins)
     private var broadGain: Float = 0
     private var periodicity = PeriodicityTracker()
-    private var usesHarmonics: Bool { preset == .harmonicGentle || preset == .harmonicBalanced }
-    private var usesResonance: Bool { preset == .resonance || preset == .balanced || preset == .harmonicBalanced }
+    private var usesHarmonics: Bool { preset == .harmonicGentle || preset == .harmonicBalanced || preset == .speechSmooth }
+    private var usesResonance: Bool { preset == .resonance || preset == .balanced || preset == .harmonicBalanced || preset == .speechSmooth }
     private let broadAttack = Float(exp(-256.0 / (24_000 * 0.010)))
     private let selectiveAttack = Float(exp(-256.0 / (24_000 * 0.020)))
     private let release = Float(exp(-256.0 / (24_000 * 0.100)))
@@ -220,7 +223,7 @@ public final class VoiceEnhancer {
         for k in 0..<Self.bins {
             let broad: Float = switch preset {
             case .bypass, .resonance: 0
-            case .gentle, .balanced, .harmonicGentle, .harmonicBalanced: 0.5 + broadGain
+            case .gentle, .balanced, .harmonicGentle, .harmonicBalanced, .speechSmooth: 0.5 + broadGain
             case .stronger: 1 + broadGain
             }
             let selective: Float
@@ -235,6 +238,12 @@ public final class VoiceEnhancer {
                 selective = sum / weights
             } else { selective = 0 }
             var reduction = min(5, broad + selective) * band[k]
+            if preset == .speechSmooth {
+                // Reduce the broad mask's influence when recent periodicity is
+                // uncertain. This is a consonant-protection hypothesis, not a
+                // phoneme classifier. Keep the existing presets bit-for-bit.
+                reduction *= 0.35 + 0.65 * periodicity.confidence
+            }
             if usesHarmonics && periodicity.confidence > 0 {
                 let hz = Float(k) * Float(Self.sampleRate) / Float(Self.size)
                 // Preserve harmonic centers, especially lower voice fundamentals.
@@ -245,7 +254,8 @@ public final class VoiceEnhancer {
                 let betweenHarmonics = 1 - exp(-0.5 * pow(distance / width, 2))
                 let lowShoulder = min(1, max(0, (hz - 600) / 900))
                 let highShoulder = min(1, max(0, (9000 - hz) / 2000))
-                reduction = min(7, reduction + 3 * periodicity.confidence * betweenHarmonics * lowShoulder * highShoulder)
+                let strength: Float = preset == .speechSmooth ? 4.5 : 3
+                reduction = min(7, reduction + strength * periodicity.confidence * betweenHarmonics * lowShoulder * highShoulder)
             }
             maximumReductionDB = max(maximumReductionDB, reduction)
             let gain = pow(10, -reduction / 20)

@@ -4,7 +4,7 @@ import AVFoundation
 import CoreML
 import Foundation
 import Testing
-@testable import KokoroKit
+@testable import LibroxTTS
 
 // Opt-in experiment only. The production engine and app are unchanged.
 @Test(.enabled(if: ProcessInfo.processInfo.environment["KOKORO_SPANISH_COMPARISON"] != nil))

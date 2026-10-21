@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 import AVFoundation
 import Foundation
-@_spi(NarrationBenchmark) import KokoroKit
+@_spi(NarrationBenchmark) import LibroxTTS
 import KokoroPronunciation
 import KokoroAudio
 import SwiftUI

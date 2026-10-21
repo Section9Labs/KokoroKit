@@ -3,7 +3,7 @@ import AVFoundation
 import Foundation
 import KokoroPronunciation
 import Testing
-@testable import KokoroKit
+@testable import LibroxTTS
 
 private struct NarrationCase: Codable {
     let key: String

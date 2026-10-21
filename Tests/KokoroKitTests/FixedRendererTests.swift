@@ -4,7 +4,7 @@ import AVFoundation
 import Foundation
 import Testing
 import KokoroPronunciation
-@testable import KokoroKit
+@testable import LibroxTTS
 
 @Test func decoderManifestRejectsWrongLimitsAndTraversal() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

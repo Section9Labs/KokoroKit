@@ -11,6 +11,9 @@ struct GenResult {
     var promptLen: Int
     var prefillWall: Double
     var loopWall: Double
+    var decodeWall: Double = 0
+    var predictorWall: Double = 0
+    var deliveryWall: Double = 0
     /// Prompt rows whose KV came from the voice's cached prefix instead of a prefill.
     var prefixRowsReused: Int = 0
 }
@@ -53,12 +56,18 @@ final class ANETalkerEngine {
     /// Also stop when the raw (unsampled) argmax is EOS, not only when EOS is drawn.
     var eosOnArgmax = true
 
-    init(coreMLDirectory dir: URL, host: HostTables) throws {
+    init(coreMLDirectory dir: URL, host: HostTables, optimizeForPrediction: Bool = false) throws {
         self.host = host
         H = host.hidden; chunks = host.cfg.talkerChunks; layersPerChunk = host.cfg.layers / host.cfg.talkerChunks
         func load(_ name: String, _ fn: String?) throws -> MLModel {
             let c = MLModelConfiguration()
             c.computeUnits = .cpuAndNeuralEngine
+            if optimizeForPrediction {
+                var hints = MLOptimizationHints()
+                hints.reshapeFrequency = .infrequent
+                hints.specializationStrategy = .fastPrediction
+                c.optimizationHints = hints
+            }
             if let fn { c.functionName = fn }
             return try MLModel(contentsOf: dir.appendingPathComponent(name + ".mlmodelc"), configuration: c)
         }
@@ -302,6 +311,7 @@ final class ANETalkerEngine {
         var frames = 0
         var e = [Float](repeating: 0, count: H)
         let t1 = Date()
+        var decodeWall = 0.0, predictorWall = 0.0, deliveryWall = 0.0
         forcedPicks = []
         let capF = forced.map { min(cap, $0.count) } ?? cap
         for f in 0..<capF {
@@ -330,8 +340,10 @@ final class ANETalkerEngine {
                     for i in 0..<H { ep[i] = Float16(cr[i]) }
                     cpHidden = hidden
                 }
+                let predictorStart = Date()
                 let co = try cp.prediction(from: try MLDictionaryFeatureProvider(dictionary: [
                     "hidden": MLFeatureValue(multiArray: cpHidden), "e0": MLFeatureValue(multiArray: e0)]))
+                predictorWall += Date().timeIntervalSince(predictorStart)
                 guard let ca = co.featureValue(for: "codes")?.multiArrayValue else { throw QwenANEError.invalid("cp codes missing") }
                 var cf = [Float](repeating: 0, count: 15)
                 Self.read(ca, into: &cf)
@@ -346,20 +358,25 @@ final class ANETalkerEngine {
                 for k in 0..<15 { let r = host.cpRow(k, subs[k]); for i in 0..<H { e[i] += r[i] } }
                 for i in 0..<H { e[i] += ttsPad[i] }
                 setX(e)
+                let decodeStart = Date()
                 hidden = try step(pos, pos - 1)
+                decodeWall += Date().timeIntervalSince(decodeStart)
                 if injectNaNLogitsAtFrame == f { logits[5] = .nan }
                 guard Self.allFinite(logits) else { throw QwenANEError.nonFinite("talker logits at frame \(f)") }
                 codes.append(Int64(g0)); for k in 0..<15 { codes.append(Int64(subs[k])) }
                 hist.append(g0)
                 pos += 1; frames += 1
+                let deliveryStart = Date()
                 try onFrame(frames, codes[(codes.count - 16)...])
+                deliveryWall += Date().timeIntervalSince(deliveryStart)
                 return false
             }
             if done { break }
         }
         if stop == .maxTokens && forced == nil && cap < requested { stop = .contextFull }   // the KV window, not the token cap, ended it
         return GenResult(codes: codes, frames: frames, stop: stop, promptLen: T,
-                         prefillWall: prefillWall, loopWall: Date().timeIntervalSince(t1), prefixRowsReused: reused)
+                         prefillWall: prefillWall, loopWall: Date().timeIntervalSince(t1), decodeWall: decodeWall,
+                         predictorWall: predictorWall, deliveryWall: deliveryWall, prefixRowsReused: reused)
     }
 }
 #else
@@ -376,7 +393,7 @@ final class ANETalkerEngine {
     var usePrefixCache = true
     /// Also stop when the raw (unsampled) argmax is EOS, not only when EOS is drawn.
     var eosOnArgmax = true
-    init(coreMLDirectory dir: URL, host: HostTables) throws {
+    init(coreMLDirectory dir: URL, host: HostTables, optimizeForPrediction: Bool = false) throws {
         throw QwenANEError.invalid("the Neural Engine voice needs a Mac with Apple silicon")
     }
     static func allFinite(_ v: [Float]) -> Bool { v.allSatisfy { $0.isFinite } }

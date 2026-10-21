@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Section9Labs and contributors
 import AVFoundation
 import Foundation
-import KokoroKit
+import LibroxTTS
 
 @main struct Probe {
     static func main() async {

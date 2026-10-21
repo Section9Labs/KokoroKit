@@ -7,7 +7,7 @@ guard arguments.count >= 3, let language = PronunciationLanguage(rawValue: argum
     FileHandle.standardError.write(Data("Usage: pronunciation-probe <language> <text> [--british] [--adverb-stress] [--plan] [--target=180]\n".utf8))
     exit(2)
 }
-let flags = ["--british", "--adverb-stress", "--plan"]
+let flags = ["--british", "--adverb-stress", "--plan", "--single-language"]
 let text = arguments.dropFirst(2).filter { !flags.contains($0) && !$0.hasPrefix("--target=") }.joined(separator: " ")
 struct PreparedUnit: Encodable {
     let text: String
@@ -16,7 +16,8 @@ struct PreparedUnit: Encodable {
 }
 do {
     let options = PronunciationOptions(britishEnglish: arguments.contains("--british"),
-        spanishAdverbDoubleStress: arguments.contains("--adverb-stress"))
+        spanishAdverbDoubleStress: arguments.contains("--adverb-stress"),
+        mixedLanguage: arguments.contains("--single-language") ? .disabled : .automatic)
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
     let engine = PronunciationEngine()

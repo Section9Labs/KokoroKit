@@ -141,7 +141,9 @@ public actor KokoroEngine {
     /// pronunciation or voice style row in the physical-device memory run.
     @_spi(NarrationBenchmark)
     public func synthesizePreparedNarration(_ phonemes: String, voiceID: String,
-                                            styleRow: Int, speed: Float = 1) throws -> Audio {
+                                            styleRow: Int, speed: Float = 1,
+                                            experimentalProsody: ExperimentalProsody = .neutral,
+                                            experimentalNoiseSeed: UInt64? = nil) throws -> Audio {
         try Task.checkCancellation()
         guard narrationExperiment, case .fixedSize = rendererPolicy else { throw SynthesisError.invalidDecoderAssets }
         guard Voice.named(voiceID) != nil else { throw SynthesisError.unknownVoice }
@@ -161,7 +163,9 @@ public actor KokoroEngine {
             voices = [voiceID: pack]
         }
         let samples = try autoreleasepool {
-            try model.forward(phonemes: phonemes, refS: pack.style(phonemeCount: styleRow), speed: speed).audio
+            try model.forward(phonemes: phonemes, refS: pack.style(phonemeCount: styleRow), speed: speed,
+                              experimentalProsody: experimentalProsody,
+                              experimentalNoiseSeed: experimentalNoiseSeed).audio
         }
         guard !samples.isEmpty, samples.allSatisfy({ $0.isFinite && abs($0) <= 1 }),
               samples.contains(where: { abs($0) > 0.00001 }) else { throw SynthesisError.invalidAudio }

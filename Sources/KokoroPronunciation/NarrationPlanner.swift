@@ -19,7 +19,7 @@ public struct NarrationUnit: Sendable {
         let trailing = text.reversed().prefix { $0.isWhitespace }
         if trailing.contains(where: { $0.isNewline }) { return .paragraph }
         let content = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            .trimmingCharacters(in: CharacterSet(charactersIn: "\"'”’»)]}"))
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\"'”’»)]}」』】）〉》"))
         return content.last.map { ".!?…。！？".contains($0) } == true ? .sentence : .continuation
     }
     /// A single sentence exceeds the renderer limit and needs its clause/word fallback.

@@ -6,6 +6,7 @@ import Foundation
 public struct BookVoiceCast: Codable, Sendable, Equatable {
     public enum Gender: String, Codable, Sendable { case unknown, female, male, conflicting }
     public enum VoiceSharing: String, Codable, Sendable { case narratorFallback, reuseCompatible }
+    public enum VoiceAssignment: String, Codable, Sendable { case automatic, manual }
     public struct GenderEvidence: Codable, Sendable, Equatable {
         public let gender: Gender
         public let quote: String
@@ -16,6 +17,9 @@ public struct BookVoiceCast: Codable, Sendable, Equatable {
         public let name: String
         public let firstChapter: String
         public fileprivate(set) var voiceID: String?
+        /// Missing in older saves, where nil could mean either no suitable voice
+        /// or an explicit user disable. Preserve those ambiguous legacy choices.
+        public fileprivate(set) var voiceAssignment: VoiceAssignment? = .automatic
         /// At most one explicit source observation for each gender. Never inferred from a name alone.
         public fileprivate(set) var genderEvidence: [GenderEvidence] = []
         public var gender: Gender {
@@ -57,6 +61,9 @@ public struct BookVoiceCast: Codable, Sendable, Equatable {
             voicePool: (voicePool + [narratorVoiceID]).filter { $0 != voiceID }, styleRow: styleRow,
             voiceGenders: voiceGenders, voiceSharing: voiceSharing)
         replacement.characters = characters; replacement.aliases = aliases
+        for index in replacement.characters.indices {
+            replacement.assignAvailableVoice(at: index)
+        }
         try replacement.validate()
         return replacement
     }
@@ -107,6 +114,7 @@ public struct BookVoiceCast: Codable, Sendable, Equatable {
         guard voiceID == nil || voicePool.contains(voiceID!) || voiceID == narratorVoiceID else { throw CastError.invalidState }
         guard let index = characters.firstIndex(where: { $0.id == characterID }) else { throw CastError.unknownCharacter }
         characters[index].voiceID = voiceID
+        characters[index].voiceAssignment = .manual
     }
 
     func validate() throws {
@@ -149,12 +157,23 @@ public struct BookVoiceCast: Codable, Sendable, Equatable {
             for item in evidence where !characters[index].genderEvidence.contains(where: { $0.gender == item.gender }) {
                 characters[index].genderEvidence.append(item)
             }
-            return characters[index] // New evidence never automatically changes a voice.
+            assignAvailableVoice(at: index)
+            return characters[index] // Never replace an assigned or manually disabled voice.
         }
         guard characters.count < Self.maximumCharacters, aliases.count < Self.maximumAliases,
               !key.isEmpty, key.utf8.count <= 256 else { return nil }
-        var character = Character(id: "c\(characters.count + 1)", name: clean, firstChapter: chapterID,
+        let character = Character(id: "c\(characters.count + 1)", name: clean, firstChapter: chapterID,
                                   voiceID: nil, genderEvidence: evidence)
+        characters.append(character); aliases[key] = character.id
+        assignAvailableVoice(at: characters.count - 1)
+        return characters.last
+    }
+
+    private mutating func assignAvailableVoice(at index: Int) {
+        guard characters[index].voiceID == nil, characters[index].voiceAssignment == .automatic else { return }
+        var character = characters[index]
+        // Conflicting source evidence must not select a new gendered voice.
+        guard character.gender != .conflicting else { return }
         let used = Set(characters.compactMap(\.voiceID))
         let gender = character.gender
         let known = gender == .female || gender == .male
@@ -170,7 +189,6 @@ public struct BookVoiceCast: Codable, Sendable, Equatable {
         } else if voiceSharing == .reuseCompatible, known, voiceGenders[narratorVoiceID] == gender {
             character.voiceID = narratorVoiceID
         }
-        characters.append(character); aliases[key] = character.id
-        return character
+        characters[index] = character
     }
 }

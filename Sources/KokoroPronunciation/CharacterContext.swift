@@ -15,13 +15,18 @@ struct CharacterContext {
             : [(.female, "mrs\\.|miss|ms\\.", "sister|mother|daughter|wife|grandmother|aunt"),
                (.male, "mr\\.", "brother|father|son|husband|grandfather|uncle")]
         let possessive = spanish ? "su|mi|tu|nuestra|nuestro|la|el" : "his|her|their|my|our|the"
+        let copula = spanish ? "es|era|fue" : "is|was"
+        let determiner = spanish ? "una?|la|el|su|mi|tu" : "a|the|his|her|their|my|our"
         var result: [BookVoiceCast.GenderEvidence] = []
         for (gender, titles, kinship) in roles {
             let boundary = #"(?![\p{L}\p{M}’'-])"#
             let patterns = [
                 #"(?<![\p{L}\p{M}])(?:"# + titles + #")[ \t]+"# + person + boundary,
                 #"(?<![\p{L}\p{M}])(?:"# + possessive + #")[ \t]+(?:"# + kinship + #")[ \t]+"# + person + boundary,
-                #"(?<![\p{L}\p{M}])"# + person + #",[ \t]+(?:"# + possessive + #")[ \t]+(?:"# + kinship + #")[,;.]"#
+                #"(?<![\p{L}\p{M}])"# + person + #",[ \t]+(?:"# + possessive + #")[ \t]+(?:"# + kinship + #")[,;.]"#,
+                // Direct assertions only: not "looked like", negation, or a name dictionary.
+                #"(?<![\p{L}\p{M}])"# + person + #"[ \t]+(?:"# + copula + #")[ \t]+(?:"# + determiner
+                    + #")[ \t]+(?:"# + kinship + ")" + boundary
             ]
             for pattern in patterns {
                 let regex = try NSRegularExpression(pattern: pattern, options: .caseInsensitive)

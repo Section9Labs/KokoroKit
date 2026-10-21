@@ -20,7 +20,7 @@ final class NarratorIntegrationTests: XCTestCase {
         let references: [String: QwenNarrator.Reference] = ["ef_dora": .init(samples: samples,
             text: "El reloj de la torre dio las nueve. La lluvia había cesado y el aire olía a tierra mojada. Clara dejó el libro junto a la ventana, cerró los ojos y recordó la voz de su madre.", language: "Spanish")]
         try await narrator.load(modelsDirectory: URL(fileURLWithPath: model), references: references,
-            cacheDirectory: out.appendingPathComponent("voices"))
+            cacheDirectory: out.appendingPathComponent("voices"), optimizeForPrediction: env["LIBROX_ANE_FAST_PREDICTION"] == "1")
         print("ANE loadSeconds=\(Date().timeIntervalSince(started))")
         let passage = "La casa estaba en silencio cuando Elena regresó. Tras la ventana, la lluvia borraba el contorno de las colinas. Dejó la carta sin abrir junto a la lámpara y esperó. En el piso de arriba, una tabla crujió. Esta vez estaba segura de haberlo oído."
         let result = try await narrator.render(passage, voiceID: "ef_dora")
@@ -28,6 +28,9 @@ final class NarratorIntegrationTests: XCTestCase {
         XCTAssertTrue(result.samples.allSatisfy { $0.isFinite && abs($0) <= 1 })
         XCTAssertFalse(result.stopReasons.contains("maxTokens"))
         print("ANE generateSeconds=\(result.generationSeconds) audioSeconds=\(Double(result.samples.count) / 24000) stops=\(result.stopReasons)")
+        for (index, timing) in result.timings.enumerated() {
+            print("ANE stage part=\(index) decode=\(timing.decode) predictor=\(timing.predictor) delivery=\(timing.delivery) loop=\(timing.loop) prefill=\(timing.prefill)")
+        }
         let format = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: 24000, channels: 1))
         let output = try AVAudioFile(forWriting: out.appendingPathComponent("ef_dora-coreml.wav"), settings: format.settings)
         let pcm = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(result.samples.count)))
@@ -38,7 +41,7 @@ final class NarratorIntegrationTests: XCTestCase {
         // Serial part delivery must preserve the previous whole-passage audio
         // and the carried voice context, without waiting for the last part.
         try await narrator.load(modelsDirectory: URL(fileURLWithPath: model), references: references,
-            cacheDirectory: out.appendingPathComponent("voices"))
+            cacheDirectory: out.appendingPathComponent("voices"), optimizeForPrediction: env["LIBROX_ANE_FAST_PREDICTION"] == "1")
         var joined: [Float] = []
         for (index, part) in try QwenReadRules.splitWithRanges(passage).enumerated() {
             let rendered = try await narrator.render(part.text, voiceID: "ef_dora")

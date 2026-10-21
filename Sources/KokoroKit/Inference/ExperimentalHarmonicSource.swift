@@ -26,7 +26,10 @@ final class ExperimentalHarmonicSource {
         return [1, NSNumber(value: pitchShape[1] * 300), 9]
     }
 
-    func predict(pitch: MLMultiArray) throws -> MLMultiArray {
+    /// A per-call seed isolates paired experiments from earlier synthesis calls.
+    /// Nil preserves the normal advancing noise stream; a seeded trial does not
+    /// consume it. This controls excitation, not Core ML's floating-point kernels.
+    func predict(pitch: MLMultiArray, seed: UInt64? = nil) throws -> MLMultiArray {
         let shape = try Self.noiseShape(pitchShape: pitch.shape.map(\.intValue))
         guard pitch.dataType == .float32 else { throw SynthesisError.invalidAudio }
         for i in 0..<pitch.count {
@@ -35,12 +38,14 @@ final class ExperimentalHarmonicSource {
         // Allocate directly: at most 42.1875 MiB, without an intermediate Swift array.
         let noise = try MLMultiArray(shape: shape, dataType: .float32)
         let buffer = noise.dataPointer.bindMemory(to: Float.self, capacity: noise.count)
+        var generator = seed.map(GaussianNoise.init(seed:)) ?? random
         for i in stride(from: 0, to: noise.count, by: 2) {
             if i % 16384 == 0 { try Task.checkCancellation() }
-            let pair = random.pair()
+            let pair = generator.pair()
             buffer[i] = pair.0
             if i + 1 < noise.count { buffer[i + 1] = pair.1 }
         }
+        if seed == nil { random = generator }
         if halfVoicedNoise {
             for frame in 0..<pitch.count where pitch[frame].floatValue > 10 {
                 for index in (frame * 2700)..<((frame + 1) * 2700) { buffer[index] *= 0.5 }
@@ -61,7 +66,7 @@ final class ExperimentalHarmonicSource {
 struct GaussianNoise {
     private var state: UInt64
     init(seed: UInt64) { state = seed }
-    private mutating func uniform() -> Double {
+    mutating func uniform() -> Double {
         state &+= 0x9e3779b97f4a7c15
         var value = state
         value = (value ^ (value >> 30)) &* 0xbf58476d1ce4e5b9

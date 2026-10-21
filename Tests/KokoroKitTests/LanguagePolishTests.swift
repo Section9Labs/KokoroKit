@@ -4,7 +4,7 @@ import AVFoundation
 import Foundation
 import Testing
 import KokoroPronunciation
-@testable import KokoroKit
+@testable import LibroxTTS
 
 @Test(.enabled(if: ProcessInfo.processInfo.environment["KOKORO_LANGUAGE_POLISH"] != nil))
 func languagePolishComparison() throws {

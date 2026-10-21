@@ -1,6 +1,6 @@
 name: NarrationBench
 packages:
-  KokoroKit:
+  LibroxTTS:
     path: ../../..
 targets:
   NarrationBench:
@@ -16,11 +16,11 @@ targets:
       - path: ../corpus.json
         buildPhase: resources
     dependencies:
-      - package: KokoroKit
-        product: KokoroKit
-      - package: KokoroKit
+      - package: LibroxTTS
+        product: LibroxTTS
+      - package: LibroxTTS
         product: KokoroPronunciation
-      - package: KokoroKit
+      - package: LibroxTTS
         product: KokoroAudio
     info:
       path: Info.plist

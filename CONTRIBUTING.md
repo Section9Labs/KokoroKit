@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to LibroxTTS
 
 Run Debug and Release tests. Add linguistic contrast tests with a descriptive source or native-speaker rationale; avoid asserting only that output is nonempty. Keep expected pronunciations independent from implementation output. Record dialect and OS where system readings are involved.
 

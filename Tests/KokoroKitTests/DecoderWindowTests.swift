@@ -3,7 +3,7 @@
 import CoreML
 import Foundation
 import Testing
-@testable import KokoroKit
+@testable import LibroxTTS
 
 @Test func decoderWindowsCoverTheSentenceWithinTheMemoryBudget() {
     #expect(DecoderWindow.plan(totalFrames: 0).isEmpty)

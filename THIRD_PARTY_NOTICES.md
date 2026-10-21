@@ -16,7 +16,7 @@ Original Section9Labs contributions: **Apache-2.0 OR MIT**. Upstream components 
 
 # Third-party notices
 
-KokoroKit is an independent integration. It does not claim authorship of the original models, dictionaries, or phonemization algorithms, or endorsement by their authors.
+LibroxTTS is an independent integration. It does not claim authorship of the original models, dictionaries, or phonemization algorithms, or endorsement by their authors.
 
 ## Code and dictionary sources
 
@@ -133,3 +133,80 @@ revision `d302a5c6080d2bb97bae38c7418f82abb76013b6`, with MLX Swift 0.31.6
 (MIT). These are dependencies of the standalone benchmark app, not the library.
 The model manifest records byte counts and hashes; no weights, generated audio,
 signing keys, device reports or provisioning profiles are committed.
+
+
+## CMUdict English supplement
+
+`Sources/PronunciationEnglish/Resources/us_cmudict.json` derives from the Carnegie Mellon Pronouncing Dictionary, revision `74790861f652b15e4ac49015a90074ad62a27690` at https://github.com/cmusphinx/cmudict. It adds 69,043 US fallback spellings; existing contextual dictionaries retain priority. The independently authored British name supplement is not derived from CMUdict.
+
+CMUdict retains its own redistribution terms, reproduced below, rather than our Apache-2.0 OR MIT choice. The deterministic importer and exact source/output checksums are documented in `Sources/PronunciationEnglish/Resources/CMUdict/ENGLISH-SUPPLEMENT-NOTICE.md`.
+
+Copyright (C) 1993-2015 Carnegie Mellon University. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+   The contents of this file are deemed to be source code.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in
+   the documentation and/or other materials provided with the
+   distribution.
+
+This work was supported in part by funding from the Defense Advanced
+Research Projects Agency, the Office of Naval Research and the National
+Science Foundation of the United States of America, and by member
+companies of the Carnegie Mellon Sphinx Speech Consortium. We acknowledge
+the contributions of many volunteers to the expansion and improvement of
+this dictionary.
+
+THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+## UniDic Japanese pronunciation data
+
+UniDic 2.1.2, Copyright (c) 2011-2013 The UniDic Consortium, is redistributed under its BSD-3-Clause alternative. This is a filtered, indexed derivative; no endorsement is implied. Source and modifications are documented in the bundled JapaneseUniDic/UNIDIC-NOTICE.txt and UNIDIC-COPYING.txt.
+
+Copyright (c) 2011-2013, The UniDic Consortium
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+ * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the
+   distribution.
+
+ * Neither the name of the UniDic Consortium nor the names of its
+   contributors may be used to endorse or promote products derived
+   from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

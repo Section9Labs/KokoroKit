@@ -1,6 +1,6 @@
 name: KokoroDemo
 packages:
-  KokoroKit:
+  LibroxTTS:
     path: ../..
 targets:
   KokoroDemo:
@@ -9,11 +9,11 @@ targets:
     deploymentTarget: '18.0'
     sources: [Sources]
     dependencies:
-      - package: KokoroKit
-        product: KokoroKit
-      - package: KokoroKit
+      - package: LibroxTTS
+        product: LibroxTTS
+      - package: LibroxTTS
         product: KokoroNarration
-      - package: KokoroKit
+      - package: LibroxTTS
         product: KokoroAudio
     info:
       path: Info.plist

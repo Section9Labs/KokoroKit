@@ -4,7 +4,7 @@ import AVFoundation
 import Foundation
 import Testing
 import KokoroPronunciation
-@testable import KokoroKit
+@testable import LibroxTTS
 
 @Test func independentAlphabetMatchesPinnedModelVocabulary() throws {
     let package = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
