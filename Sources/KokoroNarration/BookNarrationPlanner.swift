@@ -65,7 +65,10 @@ public actor BookNarrationPlanner {
                      characterVoices: Bool = false, targetPhonemes: Int = 240,
                      options: PronunciationOptions? = nil,
                      expressiveDelivery: Bool = false,
-                     prosody: BookNarrationProsody = .baseline) throws -> BookNarrationPlan {
+                     prosody: BookNarrationProsody = .baseline,
+                     profile: NarrationProfile? = nil) throws -> BookNarrationPlan {
+        let prosody = profile?.prosody ?? prosody
+        let targetPhonemes = profile?.targetPhonemes ?? targetPhonemes
         guard text.unicodeScalars.count <= PronunciationEngine.maximumInputScalars else {
             throw PronunciationError.inputTooLong(limit: PronunciationEngine.maximumInputScalars)
         }
@@ -207,7 +210,7 @@ public actor BookNarrationPlanner {
                 }
             }
         }
-        return .init(units: units, cast: cast, attribution: attribution, characterAttributionSupported: supportsAttribution)
+        return .init(units: profile?.prepare(units) ?? units, cast: cast, attribution: attribution, characterAttributionSupported: supportsAttribution)
     }
 
     private struct RenderingSpan {

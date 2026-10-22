@@ -7,7 +7,7 @@
 enum SpanishLexicon {
     static func spelling(for word: String, dialect: SpanishDialect) -> String {
         if dialect == .spain, let spelling = peninsularHiatus[word] { return spelling }
-        if dialect == .latinAmerica, let spelling = latinAmericanLoans[word] { return spelling }
+        if dialect != .spain, let spelling = latinAmericanLoans[word] { return spelling }
         return spellings[word] ?? word
     }
 
@@ -40,6 +40,7 @@ enum SpanishLexicon {
         "ximena": "jimena", "ximeno": "jimeno", "ximénez": "jiménez", "mexía": "mejía",
         "xiote": "jiote", "xiotes": "jiotes",
         // Indigenous x does not have one universal pronunciation.
+        "tuxtepec": "tukstepec",
         "tlaxcala": "tlascala", "tlaxcalteca": "tlascalteca", "tlaxcaltecas": "tlascaltecas",
         "xola": "ʃola", "mixiote": "miʃiote", "mixiotes": "miʃiotes",
 

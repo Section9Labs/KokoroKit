@@ -1,0 +1,50 @@
+{
+  "source_url": "https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.txt.gz",
+  "raw_sha256": "f50281886b7cedc9be90aa923886710711c2a67853e350b848733f8a2f75db47",
+  "source_header": [
+    "# CC-CEDICT",
+    "# Community maintained free Chinese-English dictionary.",
+    "# ",
+    "# Published by MDBG",
+    "# ",
+    "# License:",
+    "# Creative Commons Attribution-ShareAlike 4.0 International License",
+    "# https://creativecommons.org/licenses/by-sa/4.0/",
+    "# ",
+    "# Referenced works:",
+    "# CEDICT - Copyright (C) 1997, 1998 Paul Andrew Denisowski",
+    "# ",
+    "# CC-CEDICT can be downloaded from:",
+    "# https://www.mdbg.net/chinese/dictionary?page=cc-cedict",
+    "# ",
+    "# Additions and corrections can be sent through:",
+    "# https://cc-cedict.org/editor/editor.php",
+    "# ",
+    "# For more information about CC-CEDICT see:",
+    "# https://cc-cedict.org/wiki/",
+    "# ",
+    "#! version=1",
+    "#! subversion=0",
+    "#! format=ts",
+    "#! charset=UTF-8",
+    "#! entries=125295",
+    "#! publisher=MDBG",
+    "#! license=https://creativecommons.org/licenses/by-sa/4.0/",
+    "#! date=2026-10-21T05:46:59Z",
+    "#! time=1792561619"
+  ],
+  "license": "CC-BY-SA-4.0",
+  "distinct_written_forms": 182119,
+  "ambiguous_keys_excluded": 477,
+  "transformation": "Exact Han forms with one unambiguous numbered-pinyin reading, simplified and traditional; no generated words.",
+  "files": {
+    "lexicon-zh.idx": {
+      "bytes": 1456968,
+      "sha256": "eed237c901ecd0bf838263c0053f862ed4dae8ff64dc9013a61e14bf057e7da5"
+    },
+    "lexicon-zh.dat": {
+      "bytes": 3952867,
+      "sha256": "495caa48aa46c5fffe96b3f2526ee7f8d5437e6fce31f755cc5acbe9ae0394ef"
+    }
+  }
+}

@@ -51,7 +51,7 @@ public enum PronunciationError: Error, Equatable { case inputTooLong(limit: Int)
 /// This type deliberately does not claim Sendable: its NLP tagger has mutable state.
 public final class PronunciationEngine {
     /// Include in prepared-audio cache keys alongside text, voice and options.
-    public static let pipelineRevision = "independent-pronunciation-3"
+    public static let pipelineRevision = "independent-pronunciation-4"
     public static let maximumInputScalars = 16_384
     private var english: G2P?
     private var british: Bool?
@@ -115,6 +115,10 @@ public final class PronunciationEngine {
         let raw: String
         switch language {
         case .english:
+            if let known = EnglishIslandLexicon.reading(normalized, british: options.britishEnglish) {
+                raw = known
+                break
+            }
             if english == nil || british != options.britishEnglish {
                 english = nil // Release the old dictionary before loading another.
                 english = try G2P(british: options.britishEnglish)

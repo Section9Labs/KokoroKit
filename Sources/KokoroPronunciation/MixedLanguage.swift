@@ -8,7 +8,7 @@ public enum MixedLanguageMode: Sendable { case disabled, automatic }
 /// Offsets refer to UTF-16 in the exact input string, before normalization.
 /// An explicit hint can come from an EPUB lang attribute or a user correction.
 public struct PronunciationLanguageSpan: Codable, Sendable, Equatable {
-    public enum Origin: String, Codable, Sendable { case explicit, detected }
+    public enum Origin: String, Codable, Sendable { case explicit, detected, lexicon }
     public let range: NSRange
     public let language: PronunciationLanguage
     public let origin: Origin
@@ -17,9 +17,9 @@ public struct PronunciationLanguageSpan: Codable, Sendable, Equatable {
         self.range = range; self.language = language
         self.origin = .explicit; self.confidence = 1
     }
-    internal init(range: NSRange, language: PronunciationLanguage, confidence: Double) {
+    internal init(range: NSRange, language: PronunciationLanguage, origin: Origin = .detected, confidence: Double) {
         self.range = range; self.language = language
-        self.origin = .detected; self.confidence = confidence
+        self.origin = origin; self.confidence = confidence
     }
 }
 
@@ -97,6 +97,13 @@ internal enum MixedLanguageDetector {
                 identify(ns, quoted: false)
             }
             return attempts < 32
+        }
+        // Whole foreign phrases have priority over individual names. Explicit hints
+        // (including a same-language hint) always win. A reviewed name can also
+        // occur within a native sentence that was not confidently classified.
+        for name in InternationalNames.spans(in: text, base: base) {
+            guard selected.count < 64 else { break }
+            if !overlaps(name.range, selected) { selected.append(name) }
         }
         return selected.sorted { $0.range.location < $1.range.location }
     }

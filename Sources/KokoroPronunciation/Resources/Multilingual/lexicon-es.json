@@ -1,0 +1,41 @@
+{
+  "profile": "es",
+  "source": {
+    "url": "https://kaikki.org/dictionary/Spanish/kaikki.org-dictionary-Spanish.jsonl",
+    "headers": {
+      "Last-Modified": "Wed, 21 Oct 2026 14:06:17 GMT",
+      "ETag": "\"6ad8c6d9-42bcda7c\"",
+      "Content-Length": "1119672956"
+    },
+    "sha256": "a446d601ede0050ff144bdce6d0d40929c77c041b689c459a8299082dacec4d2",
+    "bytes": 1119672956,
+    "source_rows": 814137,
+    "pronunciation_rows": 174011,
+    "extraction": "Kaikki.org English Wiktionary, website snapshot 2026-10-03 / dump 2026-09-02",
+    "license": "CC-BY-SA-4.0",
+    "authors": "Wiktionary contributors; extraction by Tatu Ylonen / Wiktextract / Kaikki.org",
+    "retained_sha256": "ba93ef0d1a9e871dbaef9581b20cccb0a81f8d485218576603cc09c21f7527d4"
+  },
+  "source_pronunciation_rows": 174011,
+  "ambiguous_keys_excluded": 31957,
+  "distinct_written_forms": 105910,
+  "proper_case_forms": 4688,
+  "primary_stress_readings": 105877,
+  "supplemental_sources": [],
+  "rejected_rows": {
+    "unrepresentable_or_unstressed_reading": 8665,
+    "non_single_word": 11493
+  },
+  "license": "CC-BY-SA-4.0",
+  "transformation": "NFC exact words; broad IPA only; profile-ranked readings; ambiguous ties excluded; syllable dots removed; affricates canonicalized; stress retained. Code and data licenses are separate.",
+  "files": {
+    "lexicon-es.idx": {
+      "bytes": 847296,
+      "sha256": "1d4fa38bbfcc8d3e0d1adfdc2da1a3e959107ec331c75644467d577ff99e9b9f"
+    },
+    "lexicon-es.dat": {
+      "bytes": 2202453,
+      "sha256": "f4885eae0d24b54b5e7ee14062c20c2b96aaaf771cbb871c489bcbe12a128797"
+    }
+  }
+}

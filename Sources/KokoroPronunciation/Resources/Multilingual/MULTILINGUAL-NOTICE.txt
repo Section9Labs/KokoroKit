@@ -1,0 +1,34 @@
+Multilingual pronunciation data (2026-10-22)
+
+lexicon-es, lexicon-es-419, lexicon-es-AR, lexicon-it, lexicon-pt-BR,
+lexicon-fr and lexicon-hi adapt pronunciations by Wiktionary contributors,
+extracted by Tatu Ylonen and Wiktextract at Kaikki.org.
+English Wiktionary website snapshot: 2026-10-03 / dump 2026-09-02.
+Sources: https://kaikki.org/dictionary/ and https://kaikki.org/dictionary/rawdata.html
+Attribution/history for each written form: https://en.wiktionary.org/wiki/
+followed by the percent-encoded UTF-8 form. Italian/Portuguese supplemental
+form histories: https://it.wiktionary.org/wiki/ and https://pt.wiktionary.org/wiki/
+Their exact snapshots/hashes and contribution counts are in the JSON manifests.
+
+lexicon-zh adapts CC-CEDICT by its community contributors and MDBG.
+Referenced CEDICT: Copyright (C) 1997, 1998 Paul Andrew Denisowski.
+Source: https://www.mdbg.net/chinese/dictionary?page=cc-cedict
+Community/history: https://cc-cedict.org/
+
+Data and our adaptations are licensed CC BY-SA 4.0.
+https://creativecommons.org/licenses/by-sa/4.0/
+Full terms: CC-BY-SA-4.0.txt in this directory.
+The data is NOT relicensed Apache-2.0 or MIT. Independent Swift/Python code
+retains Apache-2.0 OR MIT. No endorsement by any data provider is implied.
+
+Modifications: NFC exact-word keys, profile-based selection, ambiguity and
+unsupported-symbol exclusions, removal of syllable dots/dental diacritics,
+canonical affricates and broad-profile notation, preserved lexical stress,
+Argentine sheismo/seseo, native Hindi conjunct conventions, sorted UTF-8 binary
+index/payload packing. Mandarin stores numbered pinyin and excludes conflicting
+readings. English-export keys with ambiguous readings cannot be replaced by a
+convenient reading from a supplemental source.
+No definitions, audio, general word-list G2P expansion or model weights included.
+Full source hashes, counts and changes: adjacent JSON; importer: Scripts/Lexicons.
+Retain attribution, license, sources and change notices on redistribution;
+modified data must retain CC BY-SA 4.0 terms without added restrictions.

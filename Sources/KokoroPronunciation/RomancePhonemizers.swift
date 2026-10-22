@@ -106,13 +106,20 @@ public struct FrenchPhonemizer: Sendable {
             // Preserve the distinction between Jean (name) and jean (fabric).
             if written[i].first?.isUppercase == true,
                let name = RomanceLexicon.frenchNames[tokens[i]] { return name }
-            return word(tokens[i])
+            return word(tokens[i], original: written[i])
         }
         // A few established loans contain a written hyphen that is not a pause.
         // Keep ordinary compounds untouched and keep accent on a voiced token.
         for i in tokens.indices where i + 2 < tokens.count && tokens[i + 1] == "-" {
             if let compound = RomanceLexicon.frenchCompounds[tokens[i] + "-" + tokens[i + 2]] {
                 output[i] = compound; output[i + 1] = ""; output[i + 2] = ""
+            }
+        }
+        // Lexical apostrophe inside aujourd'hui is not an elision or a pause.
+        // Join both typographic spellings before phrase accent is assigned.
+        for i in tokens.indices where i + 2 < tokens.count {
+            if tokens[i] == "aujourd", ["'", "’"].contains(tokens[i + 1]), tokens[i + 2] == "hui" {
+                output[i] = "oʒuʁdɥi"; output[i + 1] = ""; output[i + 2] = ""
             }
         }
         let elisions: [String: String] = ["l":"l", "d":"d", "j":"ʒ", "t":"t", "m":"m", "n":"n", "s":"s", "c":"s", "qu":"k", "jusqu":"ʒysk", "lorsqu":"lɔʁsk", "puisqu":"pɥisk"]
@@ -176,8 +183,8 @@ public struct FrenchPhonemizer: Sendable {
         accentLast()
         return output.joined()
     }
-    private func word(_ word: String) -> String {
-        if let known = Self.overrides[word] ?? RomanceLexicon.french[word] ?? FrenchLexicon.lookup(word) { return known }
+    private func word(_ word: String, original: String? = nil) -> String {
+        if let known = Self.overrides[word] ?? RomanceLexicon.french[word] ?? LoanwordReadings.french[word] ?? FrenchLexicon.lookup(word) ?? MultilingualLexicon.reading(original ?? word, language: .french)?.replacingOccurrences(of: "ˈ", with: "").replacingOccurrences(of: "ˌ", with: "") { return known }
         let a = Array(word), count = a.count
         var i = 0, out = ""
         func at(_ n: Int) -> Character { n >= 0 && n < count ? a[n] : " " }
@@ -240,7 +247,8 @@ public struct ItalianPhonemizer: Sendable {
         "ciao":"ˈʧao", "grazie":"ˈgrattsje", "buongiorno":"bwɔnˈʤorno", "buonasera":"bwɔnaˈsera", "bene":"ˈbɛne", "bello":"ˈbɛllo", "bella":"ˈbɛlla", "sono":"ˈsono", "essere":"ˈɛssere", "hanno":"ˈanno", "anno":"ˈanno", "ho":"ɔ", "ha":"a", "hai":"ai", "fanno":"ˈfanno", "fatto":"ˈfatto", "detto":"ˈdetto", "oggi":"ˈɔdʤi", "ieri":"ˈjɛri", "domani":"doˈmani", "questo":"ˈkwesto", "quello":"ˈkwello", "qui":"kwi", "qua":"kwa", "come":"ˈkome", "cosa":"ˈkɔza", "dove":"ˈdove", "quando":"ˈkwando", "perché":"perˈke", "anche":"ˈaŋke", "sempre":"ˈsɛmpre", "molto":"ˈmolto", "tutto":"ˈtutto", "più":"pju", "può":"pwɔ", "vuole":"ˈvwɔle", "uomo":"ˈwɔmo", "uomini":"ˈwɔmini", "donna":"ˈdɔnna", "casa":"ˈkaza", "cose":"ˈkɔze", "libro":"ˈlibro", "libri":"ˈlibri", "leggere":"ˈlɛdʤere", "lettera":"ˈlɛttera", "lettere":"ˈlɛttere", "pagina":"ˈpaʤina", "pagine":"ˈpaʤine", "storia":"ˈstɔrja", "storie":"ˈstɔrje", "parola":"paˈrɔla", "parole":"paˈrɔle", "italiano":"itaˈljano", "italiana":"itaˈljana", "italia":"iˈtalja", "musica":"ˈmuzika", "telefono":"teˈlɛfono", "numero":"ˈnumero", "numeri":"ˈnumeri", "tavolo":"ˈtavolo", "albero":"ˈalbero", "alberi":"ˈalberi", "piccolo":"ˈpikkolo", "piccola":"ˈpikkola", "subito":"ˈsubito", "ultimo":"ˈultimo", "ultima":"ˈultima", "facile":"ˈfaʧile", "difficile":"difˈfiʧile", "zucchero":"ˈdzukkero", "zero":"ˈdzɛro", "pizza":"ˈpittsa", "mezzo":"ˈmɛddzo", "mezzi":"ˈmɛddzi", "prezzo":"ˈprɛttso", "tempo":"ˈtɛmpo", "vento":"ˈvɛnto", "sole":"ˈsole", "acqua":"ˈakkwa", "occhio":"ˈɔkkjo", "occhi":"ˈɔkki", "figlio":"ˈfiʎʎo", "figlia":"ˈfiʎʎa", "famiglia":"faˈmiʎʎa", "sogno":"ˈsoɲɲo", "scienza":"ˈʃɛntsa", "scienze":"ˈʃɛntse", "coscienza":"koʃˈʃɛntsa", "cielo":"ˈʧɛlo", "gelato":"ʤeˈlato", "mangiare":"manˈʤare", "amico":"aˈmiko", "amici":"aˈmiʧi", "amica":"aˈmika", "amore":"aˈmore", "notte":"ˈnɔtte", "giorno":"ˈʤorno", "città":"ʧitˈta", "università":"universiˈta", "libertà":"liberˈta", "lunedì":"luneˈdi", "martedì":"marteˈdi", "mercoledì":"merkoleˈdi", "giovedì":"ʤoveˈdi", "venerdì":"venerˈdi", "sabato":"ˈsabato", "domenica":"doˈmenika"
     ]
     public func phonemize(_ text: String) -> String {
-        let tokens = RomanceText.tokens(text)
+        let originalTokens = RomanceText.tokens(text, lowercase: false)
+        let tokens = originalTokens.map { $0.lowercased() }
         var output = tokens.indices.map { i in
             let token = tokens[i]
             guard RomanceText.isWord(token) else { return ["'", "’"].contains(token) ? "" : token }
@@ -249,7 +257,7 @@ public struct ItalianPhonemizer: Sendable {
                 if i + 2 < tokens.count, RomanceText.isWord(tokens[i + 2]),
                    let elided = RomanceLexicon.italianElisions[token] { return elided }
             }
-            return word(token)
+            return word(token, original: originalTokens[i])
         }
         // These questions combine an elided interrogative with stressed è.
         // Word-by-word stress would incorrectly produce DÒV-è / CÒM-è.
@@ -262,9 +270,9 @@ public struct ItalianPhonemizer: Sendable {
         }
         return output.joined()
     }
-    private func word(_ word: String) -> String {
+    private func word(_ word: String, original: String? = nil) -> String {
         if let number = Self.numberReadings[word] { return number }
-        if let known = Self.lexicon[word] ?? RomanceLexicon.italian[word] { return known }
+        if let known = Self.lexicon[word] ?? RomanceLexicon.italian[word] ?? LoanwordReadings.italian[word] ?? MultilingualLexicon.reading(original ?? word, language: .italian) { return known }
         let a = Array(word); var i = 0, out = ""
         let frontVowels = "eièéì"
         func at(_ p: Int) -> Character { p >= 0 && p < a.count ? a[p] : " " }
@@ -335,10 +343,10 @@ public struct PortuguesePhonemizer: Sendable {
         "o":"u", "os":"us", "a":"a", "as":"as", "e":"i", "é":"ɛ", "de":"ʤi", "do":"du", "da":"da", "dos":"dus", "das":"das", "em":"ẽj̃", "um":"ũ", "uma":"ˈũmɐ", "com":"kõ", "que":"ki", "se":"si", "me":"mi", "te":"ʧi", "lhe":"ʎi", "por":"poɾ", "para":"ˈpaɾɐ", "não":"nɐ̃w̃", "sim":"sĩ", "eu":"ew", "tu":"tu", "ele":"ˈeli", "ela":"ˈɛlɐ", "eles":"ˈelis", "elas":"ˈɛlɐs", "nós":"nɔs", "você":"voˈse", "vocês":"voˈses", "isso":"ˈisu", "isto":"ˈistu", "esse":"ˈesi", "essa":"ˈɛsɐ", "este":"ˈesʧi", "esta":"ˈɛstɐ", "aquele":"aˈkeli", "aquela":"aˈkɛlɐ", "aqui":"aˈki", "ali":"aˈli", "onde":"ˈõʤi", "como":"ˈkomu", "quando":"ˈkwɐ̃du", "porque":"poɾˈki", "porquê":"poɾˈke", "quem":"kẽj̃", "qual":"kwaw", "quais":"kwajs", "foi":"foj", "sou":"sow", "são":"sɐ̃w̃", "tem":"tẽj̃", "têm":"tẽj̃", "há":"a", "muito":"ˈmũj̃tu", "muita":"ˈmũj̃tɐ", "muitos":"ˈmũj̃tus", "bem":"bẽj̃", "também":"tɐ̃ˈbẽj̃", "bom":"bõ", "boa":"ˈboɐ", "olá":"oˈla", "obrigado":"obɾiˈgadu", "obrigada":"obɾiˈgadɐ", "hoje":"ˈoʒi", "ontem":"ˈõtẽj̃", "amanhã":"amɐ̃ˈɲɐ̃", "dia":"ˈʤiɐ", "dias":"ˈʤiɐs", "noite":"ˈnojʧi", "tarde":"ˈtaɾʤi", "livro":"ˈlivɾu", "livros":"ˈlivɾus", "leitura":"lejˈtuɾɐ", "ler":"leɾ", "lê":"le", "página":"ˈpaʒinɐ", "páginas":"ˈpaʒinɐs", "história":"isˈtɔɾjɐ", "histórias":"isˈtɔɾjɐs", "palavra":"paˈlavɾɐ", "palavras":"paˈlavɾɐs", "português":"poɾtuˈges", "brasil":"bɾaˈziw", "brasileiro":"bɾaziˈlejɾu", "brasileira":"bɾaziˈlejɾɐ", "casa":"ˈkazɐ", "casas":"ˈkazɐs", "água":"ˈagwɐ", "homem":"ˈomẽj̃", "homens":"ˈomẽj̃s", "mulher":"muˈʎɛɾ", "mulheres":"muˈʎɛɾis", "criança":"kɾiˈɐ̃sɐ", "crianças":"kɾiˈɐ̃sɐs", "mundo":"ˈmũdu", "tempo":"ˈtẽpu", "cidade":"siˈdaʤi", "cidades":"siˈdaʤis", "gente":"ˈʒẽʧi", "pessoas":"peˈsoɐs", "pessoa":"peˈsoɐ", "pão":"pɐ̃w̃", "pães":"pɐ̃j̃s", "mãe":"mɐ̃j̃", "mães":"mɐ̃j̃s", "pai":"paj", "pais":"pajs", "país":"paˈis", "sol":"sɔw", "vento":"ˈvẽtu", "fogo":"ˈfogu", "novo":"ˈnovu", "nova":"ˈnɔvɐ", "pode":"ˈpɔʤi", "pôde":"ˈpoʤi", "quero":"ˈkɛɾu", "quer":"kɛɾ", "olhos":"ˈɔʎus", "olho":"ˈoʎu", "filho":"ˈfiʎu", "filha":"ˈfiʎɐ", "senhor":"seˈɲoɾ", "senhora":"seˈɲɔɾɐ", "coração":"koɾaˈsɐ̃w̃", "corações":"koɾaˈsõj̃s"
     ]
     public func phonemize(_ text: String) -> String {
-        RomanceText.tokens(text).map { RomanceText.isWord($0) ? word($0) : (["'","’"].contains($0) ? "" : $0) }.joined()
+        RomanceText.tokens(text, lowercase: false).map { RomanceText.isWord($0) ? word($0.lowercased(), original: $0) : (["'","’"].contains($0) ? "" : $0) }.joined()
     }
-    private func word(_ word: String) -> String {
-        if let known = Self.lexicon[word] ?? RomanceLexicon.portuguese[word] { return known }
+    private func word(_ word: String, original: String? = nil) -> String {
+        if let known = Self.lexicon[word] ?? RomanceLexicon.portuguese[word] ?? LoanwordReadings.portuguese[word] ?? MultilingualLexicon.reading(original ?? word, language: .portuguese) { return known }
         let a = Array(word); var i = 0, out = ""
         let vowels = "aeiouáâãàéêíóôõúü"
         func at(_ p: Int) -> Character { p >= 0 && p < a.count ? a[p] : " " }
