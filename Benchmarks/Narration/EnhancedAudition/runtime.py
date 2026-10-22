@@ -14,6 +14,7 @@ def main():
     p = argparse.ArgumentParser()
     for key in ['compact', 'frontend', 'harmonic', 'output']:
         p.add_argument('--'+key, type=pathlib.Path, required=True)
+    p.add_argument("--delivery-options", action="store_true")
     a = p.parse_args(); a.output.mkdir(parents=True, exist_ok=True)
     binary = ROOT / '.build/out/Products/Release/narration-comparison'
     identity = hashlib.sha256(binary.read_bytes()).hexdigest()
@@ -27,9 +28,22 @@ def main():
     for f in fixtures:
         cases.append(dict(key='short-'+f['language'], voice=f['voice'], language=f['language'], text=f['text'],
                           title=f['language'].upper()+' · '+f['voice'], source=f['source'], book=False))
+    if a.delivery_options:
+        cases = [c for c in cases if c['book']]
+        for case in cases: case['profiles'] = ['enhanced', 'combined']
+        for language, voice, text in [
+            ('en', 'af_heart', '“Come back now,” Nora said angrily. The hallway was quiet. “You found it,” she said with joy. “Is everyone safe?” he asked fearfully. “We are home,” she replied with relief.'),
+            ('es', 'ef_dora', '—Vuelve ahora —dijo Nora con rabia. El pasillo estaba en silencio.\n—Lo encontraste —respondió con alegría.\n—¿Estamos a salvo? —preguntó con miedo.\n—Estamos en casa —dijo con alivio.')]:
+            cases.append(dict(key='expression-'+language,voice=voice,language=language,text=text,
+                title='Explicit dialogue cues · '+voice,source='Authored diagnostic, not a book excerpt.',book=False,
+                profiles=['enhanced','expressive']))
+        cases.append(dict(key='spanish-regions',voice='ef_dora',language='es',
+            text='La lluvia caía sobre la plaza. Cecilia cerró la ventana y dejó las llaves junto a la taza. ¿Quieres que te llame mañana? —preguntó. El software de Google y el hardware de Apple estaban listos.',
+            title='Spanish pronunciation regions · Dora',source='Authored regional diagnostic, not a claim of native accent identity.',
+            book=False,profiles=['enhanced','latinAmerica','argentina']))
     records=[]
     for case in cases:
-        for profile in ['basic','enhanced']:
+        for profile in case.get('profiles', ['basic','enhanced']):
             out=a.output/case['key']/profile; out.mkdir(parents=True,exist_ok=True)
             textfile=out/'source.txt'; textfile.write_text(case['text'])
             marker=out/'complete.json'
@@ -42,7 +56,7 @@ def main():
                     subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT,check=True,cwd=ROOT)
                 marker.write_text(json.dumps({'binarySHA256':identity})+'\n')
             report=json.loads((out/'render.json').read_text())
-            assert report['publicSynthesisAPI'] and report['runtimeProfile']==profile and report['speed']==1
+            assert report['publicSynthesisAPI'] and report['runtimeProfile']==('basic' if profile=='basic' else 'enhanced') and report['speed']==1
             assert report['text']==case['text'] and report['maximumDecoderFrames']==160
             if case['book']: assert report['seconds']>=120
             for u in report['units']:
@@ -62,6 +76,9 @@ def main():
             (a.output/'audition.json').write_text(json.dumps(dict(binarySHA256=identity,cases=cases,recordings=records),ensure_ascii=False,indent=2)+'\n')
             print(case['key'],profile,round(report['seconds'],2),'audio seconds',flush=True)
     document='''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enhanced · integrated narration</title><style>body{font:17px/1.6 system-ui;background:#f5f0e7;color:#302b25;max-width:1000px;margin:40px auto;padding:0 22px}h1,h2{font-family:Georgia,serif;line-height:1.2}section{border-top:1px solid #cbbfae;padding:24px 0}.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}audio{width:100%}small{color:#62584d}details{margin-top:18px}pre{white-space:pre-wrap;font:inherit}.badge{color:#765128}a{color:#765128}@media(max-width:650px){.pair{grid-template-columns:1fr}} </style><h1>Enhanced · integrated narration</h1><p>Same public narration API as the candidate Librox build. Basic and Enhanced share the updated dictionaries. Playback is 1×; both use the balanced cleanup filter. Enhanced uses bounded source context, length-matched voice references, and conservative English/Spanish question emphasis.</p><p class="badge">Listening candidates, not a release. No newly trained weights. Mac CPU-only renders; iPhone memory, heat and locked-screen checks remain for your later TestFlight test. The six other languages do not receive English/Spanish pitch rules.</p><p>Book excerpts below are at least two minutes each. The eight short diagnostics are authored test text, not book passages. WAV previews are matched to −25 LUFS with peak protection; raw outputs and reports remain beside them.</p>'''
+    if a.delivery_options:
+        document = document.replace('Enhanced · integrated narration', 'Enhanced · final options')
+        document += '<p><strong>Optional delivery comparisons:</strong> Enhanced is the accepted default. Combined enables expressive cues and a subtle voice blend; Expressive changes only source-local emotional cues. These are conservative pitch hypotheses, not newly trained emotion styles. Region samples change phonetic rules, not the identity of the voice. Basic remains available on the <a href="../runtime/">original comparison page</a>.</p>'
     for case in cases:
         document+=f'<section id="{case["key"]}"><h2>{html.escape(case["title"])}</h2><small>{"Real book excerpt" if case["book"] else "Short-utterance diagnostic"}</small><div class="pair">'
         for r in [r for r in records if r['case']==case['key']]:

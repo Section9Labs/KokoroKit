@@ -11,7 +11,7 @@ import KokoroPronunciation
 
 enum EnhancedAudition {
     enum Failure: Error { case arguments, source, audio }
-    static let variants = ["basic", "hd-control", "hd-length", "hd-bounded", "hd-phrasing", "hd-expression", "hd-blend", "hd-short80", "hd-short158", "hd-exclamation", "hd-shortcontext", "runtime-basic", "runtime-enhanced"]
+    static let variants = ["basic", "hd-control", "hd-length", "hd-bounded", "hd-phrasing", "hd-expression", "hd-blend", "hd-short80", "hd-short158", "hd-exclamation", "hd-shortcontext", "runtime-basic", "runtime-enhanced", "runtime-expressive", "runtime-blend", "runtime-combined", "runtime-latinAmerica", "runtime-argentina"]
     static func run(_ args: [String]) async throws {
         guard args.count == 7, let voice = Voice.named(args[4]), variants.contains(args[6]),
               let language = PronunciationLanguage(rawValue: voice.language.rawValue) else { throw Failure.arguments }
@@ -19,7 +19,10 @@ enum EnhancedAudition {
         try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
         let text = try String(contentsOfFile: args[3], encoding: .utf8)
         let source = text as NSString
-        let runtimeProfile: NarrationProfile? = variant == "runtime-basic" ? .basic : variant == "runtime-enhanced" ? .enhanced : nil
+        let runtimeProfile: NarrationProfile? = variant == "runtime-basic" ? .basic : variant.hasPrefix("runtime-") ? .enhanced : nil
+        let delivery = NarrationDeliveryOptions(expressive: ["runtime-expressive", "runtime-combined"].contains(variant),
+            blendedVoice: ["runtime-blend", "runtime-combined"].contains(variant))
+        let dialect: SpanishDialect = variant == "runtime-argentina" ? .argentina : variant == "runtime-latinAmerica" ? .latinAmerica : .spain
         let shortReference: Int? = variant == "hd-short80" ? 80 : variant == "hd-short158" ? 158 : nil
         let contextual = ["hd-phrasing", "hd-expression", "hd-blend", "hd-exclamation", "hd-shortcontext"].contains(variant) || shortReference != nil
         let stylePolicy: NarrationStylePolicy = switch variant {
@@ -31,8 +34,8 @@ enum EnhancedAudition {
         let planStart = Date()
         let plan = try await BookNarrationPlanner().plan(text, chapterID: "excerpt", cast: cast,
             targetPhonemes: contextual ? 180 : 240,
-            options: .init(britishEnglish: voice.isBritish, spanishAdverbDoubleStress: true),
-            expressiveDelivery: false, prosody: contextual ? .structuredConversation : .baseline, profile: runtimeProfile)
+            options: .init(britishEnglish: voice.isBritish, spanishDialect: dialect, spanishAdverbDoubleStress: true),
+            expressiveDelivery: false, prosody: contextual ? .structuredConversation : .baseline, profile: runtimeProfile, delivery: delivery)
         let units = variant == "hd-shortcontext" ? EnhancedNarrationDelivery.shortSpanishContextUnits(plan.units) : plan.units
         let planSeconds = Date().timeIntervalSince(planStart)
         guard units.map(\.text).joined() == text,
@@ -70,6 +73,8 @@ enum EnhancedAudition {
                 default: nil
                 }
             }() : nil
+            let activeBlend = runtimeProfile != nil
+                ? delivery.secondaryVoice(for: unit.voiceID).map { NarrationVoiceBlend(secondaryVoiceID: $0.id, weight: $0.weight) } : blend
             let row = runtimeProfile?.styleRow(for: unit) ?? shortReference.map { EnhancedNarrationDelivery.shortSpanishStyleRow(for: unit, reference: $0) }
                 ?? stylePolicy.row(phonemeCount: unit.phonemes.unicodeScalars.count)
             let began = Date()
@@ -77,7 +82,8 @@ enum EnhancedAudition {
             let audio: Audio
             if let runtimeProfile {
                 audio = try await engine.synthesizeNarration(unit.phonemes, voiceID: unit.voiceID,
-                    styleRow: row, speed: runtimeProfile.speed(for: unit), pitchGestures: gestures)
+                    styleRow: row, speed: runtimeProfile.speed(for: unit), pitchGestures: gestures,
+                    voiceBlend: activeBlend)
             } else {
                 audio = try await engine.synthesizePreparedNarration(unit.phonemes, voiceID: voice.id,
                     styleRow: row, speed: 1, experimentalNoiseSeed: 20261022 + UInt64(unit.range.location),
@@ -119,14 +125,14 @@ enum EnhancedAudition {
                 "renderSeconds": renderSeconds, "twoFiltersSeconds": filterSeconds, "peakRSSBytes": usage.ru_maxrss,
                 "focus": focus.map { ["start": $0.phonemeRange.lowerBound, "end": $0.phonemeRange.upperBound,
                     "semitones": $0.semitones, "reason": $0.reason] as [String: Any] },
-                "secondaryVoice": blend?.secondaryVoiceID ?? "", "secondaryWeight": blend?.weight ?? 0])
+                "secondaryVoice": activeBlend?.secondaryVoiceID ?? "", "secondaryWeight": activeBlend?.weight ?? 0])
             cursor += timed.count; previous = unit
             print("\(voice.id) \(variant) \(index + 1)/\(units.count) \(String(format: "%.2f", renderSeconds))s", terminator: "\n")
             fflush(stdout)
         }
         await engine.unload()
         let report: [String: Any] = ["variant": variant, "voice": voice.id, "text": text,
-            "language": language.rawValue, "speed": 1, "seconds": Double(cursor)/24_000,
+            "language": language.rawValue, "spanishDialect": dialect.rawValue, "deliveryOptions": delivery.cacheIdentity, "speed": 1, "seconds": Double(cursor)/24_000,
             "renderSeconds": renderTotal, "planningSeconds": planSeconds, "loadSeconds": loadSeconds,
             "firstAudioSeconds": firstAudioSeconds, "stylePolicy": stylePolicy.rawValue,
             "contextual": contextual, "tunedPreset": tunedPreset.rawValue,

@@ -18,6 +18,7 @@ public struct BookNarrationUnit: Sendable {
     public var speakerID: String? = nil
     public var role: DialogueTimingRole = .unknown
     public var speechAct: NarrationActEvidence? = nil
+    public var expressiveFocus: [NarrationFocus] = []
     /// Hosts can surface spelling fallbacks and unsupported sounds rather than
     /// treating successful token generation as pronunciation acceptance.
     /// Diagnostic offsets, where present, are local to this unit's text.
@@ -66,7 +67,8 @@ public actor BookNarrationPlanner {
                      options: PronunciationOptions? = nil,
                      expressiveDelivery: Bool = false,
                      prosody: BookNarrationProsody = .baseline,
-                     profile: NarrationProfile? = nil) throws -> BookNarrationPlan {
+                     profile: NarrationProfile? = nil,
+                     delivery: NarrationDeliveryOptions = .init()) throws -> BookNarrationPlan {
         let prosody = profile?.prosody ?? prosody
         let targetPhonemes = profile?.targetPhonemes ?? targetPhonemes
         guard text.unicodeScalars.count <= PronunciationEngine.maximumInputScalars else {
@@ -210,7 +212,16 @@ public actor BookNarrationPlanner {
                 }
             }
         }
-        return .init(units: profile?.prepare(units) ?? units, cast: cast, attribution: attribution, characterAttributionSupported: supportsAttribution)
+        var prepared = profile?.prepare(units) ?? units
+        if profile == .enhanced, delivery.expressive {
+            for i in prepared.indices where !prepared[i].phonemes.isEmpty {
+                prepared[i].expressiveFocus = try NarrationExpressiveDelivery.focus(
+                    text: prepared[i].text, sourceRange: prepared[i].range, phonemes: prepared[i].phonemes,
+                    source: text, language: cast.language,
+                    options: options ?? .init(britishEnglish: Voice.named(prepared[i].voiceID)?.isBritish ?? false))
+            }
+        }
+        return .init(units: prepared, cast: cast, attribution: attribution, characterAttributionSupported: supportsAttribution)
     }
 
     private struct RenderingSpan {

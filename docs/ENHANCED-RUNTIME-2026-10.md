@@ -61,3 +61,36 @@ Generic platform builds and Mac measurements are not iPhone memory, heat,
 startup or locked-screen acceptance. Matt will perform the real-book device
 check after the later TestFlight, following listening approval. Do not merge,
 release or upload this candidate before that listening decision.
+
+## Optional delivery and regional settings follow-up
+
+The default profile above remains unchanged. Hosts may now pass
+`NarrationDeliveryOptions` to the planner and include its `cacheIdentity` in
+prepared-audio keys. Expressive delivery recognizes explicit EN/ES reporting
+clauses (for example “said angrily” or “dijo con rabia”), and attaches bounded
+pitch gestures only where source-local phoneme boundaries match exactly.
+Narrator attribution, unvoiced sounds, text, phonemes and playback rate remain
+unchanged. Negated, ambiguous, unsupported-language and unaligned cues abstain.
+These are conservative acoustic hypotheses, not trained emotional styles.
+
+Optional blends use a single model and at most two voice references: Dora with
+15% Santa, Santa with 25% Alex, Heart with 20% Bella. Other voices retain their
+original reference. The public synthesis API accepts `NarrationVoiceBlend`;
+callers must include the resolved blend/options in cache identity. Blending is
+off by default and requires listening review.
+
+The consumer adds a shared Spanish region preference: Follow book, Spain,
+Latin America, Argentina. Explicit preference wins; automatic uses regional
+metadata and defaults to Spain when unavailable. This changes pronunciation,
+not the voice's learned accent or identity. Both qualities share the preference.
+
+`runtime.py --delivery-options` produces default/combined two-minute book pairs,
+separate explicit-emotion diagnostics, and regional pronunciation samples.
+The diagnostics are labelled authored text. No new trained weights are used.
+
+Training qualification remains separate. At the read-only audit, the acoustic
+worker was live with 7,840 committed head updates and 6,071 distinct source clips
+(7,409 English units, 441 Spanish units). Its status explicitly says
+`production_ready: false`. The prosody run retained baseline step 0 and stopped
+with `no_qualified_improvement_after_two_coverage_epochs`; it must not be promoted
+or restarted by this feature work. No training files or processes were changed.

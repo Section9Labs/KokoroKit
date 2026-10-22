@@ -134,9 +134,10 @@ public actor KokoroEngine {
     /// audiobook renderer. The caller retains source offsets and voice identity.
     public func synthesizeNarration(_ phonemes: String, voiceID: String,
                                    styleRow: Int = 158, speed: Float = 1,
-                                   pitchGestures: [NarrationPitchGesture] = []) throws -> Audio {
+                                   pitchGestures: [NarrationPitchGesture] = [],
+                                   voiceBlend: NarrationVoiceBlend? = nil) throws -> Audio {
         try synthesizePreparedNarration(phonemes, voiceID: voiceID, styleRow: styleRow, speed: speed,
-                                       pitchGestures: pitchGestures)
+                                       pitchGestures: pitchGestures, voiceBlend: voiceBlend)
     }
 
     /// Checked prepared input avoids silently changing the listening experiment's
