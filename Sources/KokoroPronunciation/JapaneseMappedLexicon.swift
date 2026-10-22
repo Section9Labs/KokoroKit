@@ -46,15 +46,15 @@ struct JapaneseLexiconStorage: Sendable {
     let entryCount: Int
     var mappedByteCount: Int { index.count + payload.count }
 
-    init(indexURL: URL, payloadURL: URL) throws {
+    init(indexURL: URL, payloadURL: URL, magic: String = "JPKANA01") throws {
         try self.init(index: Data(contentsOf: indexURL, options: .alwaysMapped),
-                      payload: Data(contentsOf: payloadURL, options: .alwaysMapped))
+                      payload: Data(contentsOf: payloadURL, options: .alwaysMapped), magic: magic)
     }
 
-    init(index: Data, payload: Data) throws {
+    init(index: Data, payload: Data, magic: String = "JPKANA01") throws {
         let count = index.withUnsafeBytes { raw -> Int? in
             let bytes = raw.bindMemory(to: UInt8.self)
-            guard bytes.count >= 16, bytes[0..<8].elementsEqual("JPKANA01".utf8),
+            guard magic.utf8.count == 8, bytes.count >= 16, bytes[0..<8].elementsEqual(magic.utf8),
                   Self.uint32(bytes, at: 12) == 8 else { return nil }
             let count = Int(Self.uint32(bytes, at: 8))
             guard count > 0, count == (bytes.count - 16) / 8,

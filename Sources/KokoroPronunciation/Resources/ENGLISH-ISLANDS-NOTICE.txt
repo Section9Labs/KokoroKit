@@ -1,0 +1,9 @@
+english-islands.json: small derived English pronunciation cache.
+Apache-2.0, preserving the existing kokoro-swift / Misaki / English dictionary
+attribution in THIRD_PARTY_NOTICES.md and PronunciationEnglish resources.
+Generated with Scripts/Lexicons/export_english_islands.swift from the reviewed
+list Scripts/Lexicons/english-islands.json, 2026-10-22. The words and spelling
+are not translated; the source English frontend's Kokoro phonemes are retained.
+US fallback is used when a British brand reading is absent.
+This resource avoids loading the complete English dictionary for a single
+reviewed brand/loanword inside other-language text. Not a full English lexicon.

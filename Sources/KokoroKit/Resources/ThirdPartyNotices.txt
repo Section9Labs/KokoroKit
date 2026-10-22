@@ -1409,3 +1409,13 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Multilingual pronunciation dictionaries
+Wiktionary contributors, via Tatu Ylonen / Wiktextract / Kaikki.org
+(https://kaikki.org/dictionary/); Mandarin: CC-CEDICT contributors / MDBG
+(https://www.mdbg.net/chinese/dictionary?page=cc-cedict). Derived lexical data
+retains CC BY-SA 4.0 separately from the Apache-2.0 OR MIT code.
+License: https://creativecommons.org/licenses/by-sa/4.0/
+Full terms, source hashes, attribution and modifications are bundled in the
+KokoroPronunciation multilingual resources (MULTILINGUAL-NOTICE.txt and
+CC-BY-SA-4.0.txt). No endorsement is implied.

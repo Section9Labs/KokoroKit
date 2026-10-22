@@ -1,0 +1,65 @@
+{
+  "profile": "it",
+  "source": {
+    "url": "https://kaikki.org/dictionary/Italian/kaikki.org-dictionary-Italian.jsonl",
+    "headers": {
+      "Last-Modified": "Wed, 21 Oct 2026 13:32:50 GMT",
+      "ETag": "\"6ad8bf02-2e754e75\"",
+      "Content-Length": "779439733"
+    },
+    "sha256": "f6f3c7fe8e0f4b5faef27c1bcd482579d61a9d885049b3a7a669d6711f2df72a",
+    "bytes": 779439733,
+    "source_rows": 624122,
+    "pronunciation_rows": 105124,
+    "extraction": "Kaikki.org English Wiktionary, website snapshot 2026-10-03 / dump 2026-09-02",
+    "license": "CC-BY-SA-4.0",
+    "authors": "Wiktionary contributors; extraction by Tatu Ylonen / Wiktextract / Kaikki.org",
+    "retained_sha256": "0b9fbb98a7932308fb44314f0c16a4fb68fedbcca49dc0b51f7a1e763cef9357"
+  },
+  "source_pronunciation_rows": 105124,
+  "ambiguous_keys_excluded": 8077,
+  "distinct_written_forms": 91902,
+  "proper_case_forms": 4981,
+  "primary_stress_readings": 91828,
+  "supplemental_sources": [
+    {
+      "source": {
+        "url": "https://kaikki.org/dictionary/downloads/it/it-extract.jsonl.gz",
+        "sha256": "0f93703594850bc8ec1cd764b3b193e0a153a83e24c809938f7183777d406314",
+        "source_rows": 803337,
+        "pronunciation_rows": 53785,
+        "license": "CC-BY-SA-4.0",
+        "retained_sha256": "235ba39cb5c14bd5c8dbb31d2de530db6080f106ca3458b906c064f88aee8021",
+        "authors": "it.wiktionary.org contributors; Kaikki.org / Wiktextract"
+      },
+      "added_forms": 14406,
+      "counts": {
+        "source_pronunciation_rows": 53785,
+        "ambiguous_keys_excluded": 675,
+        "distinct_written_forms": 36682,
+        "proper_case_forms": 1211,
+        "primary_stress_readings": 36604
+      },
+      "rejected_rows": {
+        "unrepresentable_or_unstressed_reading": 3365,
+        "non_single_word": 898
+      }
+    }
+  ],
+  "rejected_rows": {
+    "non_single_word": 1757,
+    "unrepresentable_or_unstressed_reading": 167
+  },
+  "license": "CC-BY-SA-4.0",
+  "transformation": "NFC exact words; broad IPA only; profile-ranked readings; ambiguous ties excluded; syllable dots removed; affricates canonicalized; stress retained. Code and data licenses are separate.",
+  "files": {
+    "lexicon-it.idx": {
+      "bytes": 735232,
+      "sha256": "e625420e2bf3ba58284c8f6d964bd08e535b4778f45cafe880cfe692584ceb01"
+    },
+    "lexicon-it.dat": {
+      "bytes": 1926585,
+      "sha256": "c10b5ea5319244dd30dc60c9a789d6dbd4667c07c55b93d469a48d401bd84a80"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "profile": "hi",
+  "source": {
+    "url": "https://kaikki.org/dictionary/Hindi/kaikki.org-dictionary-Hindi.jsonl",
+    "headers": {
+      "Last-Modified": "Wed, 21 Oct 2026 13:52:40 GMT",
+      "ETag": "\"6ad8c3a8-a092b1c\"",
+      "Content-Length": "168373020"
+    },
+    "sha256": "5ac46f3e01b257d7eb40097b9eada11261cedc81dcbee2259c9096fd2372bf8a",
+    "bytes": 168373020,
+    "source_rows": 39513,
+    "pronunciation_rows": 37241,
+    "extraction": "Kaikki.org English Wiktionary, website snapshot 2026-10-03 / dump 2026-09-02",
+    "license": "CC-BY-SA-4.0",
+    "authors": "Wiktionary contributors; extraction by Tatu Ylonen / Wiktextract / Kaikki.org",
+    "retained_sha256": "e908eef7fe5f3019912197030e6aa1e24ff9329cd6bee7d3876a592052970b60"
+  },
+  "source_pronunciation_rows": 37241,
+  "ambiguous_keys_excluded": 2375,
+  "distinct_written_forms": 27672,
+  "proper_case_forms": 0,
+  "primary_stress_readings": 2,
+  "supplemental_sources": [],
+  "rejected_rows": {
+    "non_single_word": 2557,
+    "unrepresentable_or_unstressed_reading": 1804
+  },
+  "license": "CC-BY-SA-4.0",
+  "transformation": "NFC exact words; broad IPA only; profile-ranked readings; ambiguous ties excluded; syllable dots removed; affricates canonicalized; stress retained. Code and data licenses are separate.",
+  "files": {
+    "lexicon-hi.idx": {
+      "bytes": 221392,
+      "sha256": "abbf34c05c96bfd0451bfbc863f7849a7f89842a0ef1e601b6607264708fa163"
+    },
+    "lexicon-hi.dat": {
+      "bytes": 883141,
+      "sha256": "914e2bbbb94bd1fe9a3f778fe430e59fd91a748357a48edd32aab4275129b381"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "profile": "fr",
+  "source": {
+    "url": "https://kaikki.org/dictionary/French/kaikki.org-dictionary-French.jsonl",
+    "headers": {
+      "Last-Modified": "Wed, 21 Oct 2026 14:13:45 GMT",
+      "ETag": "\"6ad8c899-235650c7\"",
+      "Content-Length": "592859335"
+    },
+    "sha256": "615f2f2d0a8e48006dff460f640aa8754226411ceca5d398bfa8da2680c01938",
+    "bytes": 592859335,
+    "source_rows": 404127,
+    "pronunciation_rows": 131131,
+    "extraction": "Kaikki.org English Wiktionary, website snapshot 2026-10-03 / dump 2026-09-02",
+    "license": "CC-BY-SA-4.0",
+    "authors": "Wiktionary contributors; extraction by Tatu Ylonen / Wiktextract / Kaikki.org",
+    "retained_sha256": "85c6694c72e8521c2cdb7c47f40918882cebb187b82d750a43b56fcd171cbf61"
+  },
+  "source_pronunciation_rows": 131131,
+  "ambiguous_keys_excluded": 12844,
+  "distinct_written_forms": 88259,
+  "proper_case_forms": 6031,
+  "primary_stress_readings": 6,
+  "supplemental_sources": [],
+  "rejected_rows": {
+    "non_single_word": 20324,
+    "unrepresentable_or_unstressed_reading": 535
+  },
+  "license": "CC-BY-SA-4.0",
+  "transformation": "NFC exact words; broad IPA only; profile-ranked readings; ambiguous ties excluded; syllable dots removed; affricates canonicalized; stress retained. Code and data licenses are separate.",
+  "files": {
+    "lexicon-fr.idx": {
+      "bytes": 706088,
+      "sha256": "df598309fbbb3a61ec6e3a4461e646f754b85c094edcadf00421baeeed31a883"
+    },
+    "lexicon-fr.dat": {
+      "bytes": 1696133,
+      "sha256": "2f139ad9eef6848b2c5f6bef97504a717d7769b72d65c021fb73e1c666a2f483"
+    }
+  }
+}

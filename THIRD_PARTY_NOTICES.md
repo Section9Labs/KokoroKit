@@ -210,3 +210,22 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## Large multilingual pronunciation resources (2026-10-22)
+
+`Sources/KokoroPronunciation/Resources/Multilingual/lexicon-*` adapts
+Wiktionary IPA via Kaikki.org / Wiktextract and CC-CEDICT Mandarin pinyin.
+**Data and our adaptations: CC BY-SA 4.0**, separately from original
+Apache-2.0 OR MIT Swift/runtime and Python/importer code. Full attribution,
+license, source hashes and transformation notices are bundled beside the data.
+Commercial reuse requires those attribution and share-alike terms; the data
+is not wholly owned or MIT-relicensed. No noncommercial PhonItalia/LexPorBR
+data, stress-stripped WikiPron/MFA data, or eSpeak-generated lexicon was used.
+See [coverage and validation](docs/MULTILINGUAL-LEXICONS-2026-10.md).
+
+`Resources/english-islands.json` is a small derived lookup of the already
+bundled Apache-2.0 English frontend/dictionaries. It retains those attributions
+and license, rather than the CC BY-SA terms of the separate multilingual data.
+`Scripts/Lexicons/export_english_islands.swift` and `english-islands.json`
+(documented input list) reproduce it. A small independently specified runtime
+brand fallback remains under the source file's Apache-2.0 OR MIT terms.

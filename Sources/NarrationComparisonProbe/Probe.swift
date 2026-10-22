@@ -2,7 +2,7 @@
 // Offline diagnostic: render each unit once, compare filters on identical PCM.
 import AVFoundation
 import Foundation
-import LibroxTTS
+@_spi(NarrationBenchmark) import LibroxTTS
 import KokoroNarration
 import KokoroAudio
 import KokoroPronunciation
@@ -18,6 +18,10 @@ import KokoroPronunciation
     }
     static func main() async throws {
         let args = Array(CommandLine.arguments.dropFirst())
+        if args.first == "--enhanced-audition" {
+            try await EnhancedAudition.run(Array(args.dropFirst()))
+            return
+        }
         if args.first == "--filter" {
             guard args.count == 5, let preset = VoiceEnhancer.Preset(rawValue: args[2]) else { throw Failure.arguments }
             let input = try AVAudioFile(forReading: URL(fileURLWithPath: args[1]), commonFormat: .pcmFormatFloat32, interleaved: false)

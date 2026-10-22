@@ -65,7 +65,7 @@ public struct HindiPhonemizer: Sendable {
     ]
 
     private func pronounce(_ word: String) -> String {
-        if let reading = Self.readings[word.precomposedStringWithCanonicalMapping] { return reading }
+        if let reading = Self.readings[word.precomposedStringWithCanonicalMapping] ?? MultilingualLexicon.reading(word.replacingOccurrences(of: "\u{200D}", with: "").replacingOccurrences(of: "\u{200C}", with: ""), language: .hindi) { return reading }
         // Modern Hindi normally reads the exact ज्ञ conjunct as /ɡj/.
         // Join controls change its display, not pronunciation. Keep bare ज/ञ
         // and separated letters untouched; this is not a Sanskrit reading mode.
@@ -137,7 +137,7 @@ private struct AsianWord {
     let reading: String?
 }
 
-private func asianWords(_ text: String, locale: String, readings: [String: String]) -> [AsianWord] {
+private func asianWords(_ text: String, locale: String, readings: [String: String], mapped: ((String) -> String?)? = nil) -> [AsianWord] {
     let source = text as NSString
     let tokenizer = CFStringTokenizerCreate(nil, text as CFString,
         CFRange(location: 0, length: source.length), kCFStringTokenizerUnitWordBoundary,
@@ -155,7 +155,7 @@ private func asianWords(_ text: String, locale: String, readings: [String: Strin
     // A system tokenizer may split a known compound (二十 + 歳, 音 + 樂).
     // Merge only complete, adjacent tokens; never replace a substring inside a
     // different word/name or cross whitespace/punctuation to force a reading.
-    let maximumLength = readings.keys.map(\.count).max() ?? 0
+    let maximumLength = max(readings.keys.map(\.count).max() ?? 0, mapped == nil ? 0 : 12)
     let numerals = "零〇一二三四五六七八九十百千万億兆0123456789０１２３４５６７８９"
     var merged: [AsianWord] = [], index = 0
     while index < result.count {
@@ -168,7 +168,7 @@ private func asianWords(_ text: String, locale: String, readings: [String: Strin
             // numeral: 十 + 二 + 日 must not become juu + futsuka.
             let followsNumeral = index > 0 && result[index - 1].text.last.map { numerals.contains($0) } == true
             let startsNumeral = candidate.first.map { numerals.contains($0) } == true
-            if let reading = readings[candidate], !(locale == "ja" && followsNumeral && startsNumeral) {
+            if let reading = readings[candidate] ?? mapped?(candidate), !(locale == "ja" && followsNumeral && startsNumeral) {
                 match = AsianWord(text: candidate, reading: reading)
                 matchedEnd = end + 1
             }
@@ -372,12 +372,13 @@ public struct ChinesePhonemizer: Sendable {
         func flush() {
             if !phrase.isEmpty { result += Self.render(phrase); phrase.removeAll() }
         }
-        for word in asianWords(text, locale: "zh-Hans", readings: Self.readings) {
+        for word in asianWords(text, locale: "zh-Hans", readings: Self.readings, mapped: { MultilingualLexicon.reading($0, language: .chinese) }) {
             let characters = word.text.map(String.init)
             guard !characters.isEmpty && word.text.unicodeScalars.allSatisfy({ (0x3400...0x9FFF).contains($0.value) || $0.value == 0x3007 }) else {
                 flush(); result += word.text; continue
             }
-            let reading = Self.readings[word.text] ?? word.reading ?? word.text.applyingTransform(.toLatin, reverse: false) ?? word.text
+            let lexical = Self.readings[word.text] ?? MultilingualLexicon.reading(word.text, language: .chinese)
+            let reading = lexical ?? word.reading ?? word.text.applyingTransform(.toLatin, reverse: false) ?? word.text
             let pieces = Self.splitPinyin(reading, count: characters.count)
                 ?? characters.map { $0.applyingTransform(.toLatin, reverse: false) ?? $0 }
             for (character, pinyin) in zip(characters, pieces) {
@@ -385,7 +386,7 @@ public struct ChinesePhonemizer: Sendable {
                 // Do not confuse it with Latin O or the geometric circle ○.
                 let parsed = Self.parse(character == "〇" ? "líng" : pinyin)
                 phrase.append(Syllable(source: character, base: parsed.0, tone: parsed.1,
-                    lexicalNeutral: Self.readings[word.text] != nil && parsed.1 == 5,
+                    lexicalNeutral: lexical != nil && parsed.1 == 5,
                     invariantYi: character == "一" && Self.invariantYiWords.contains(word.text)))
             }
         }
@@ -400,6 +401,7 @@ public struct ChinesePhonemizer: Sendable {
     // Contextual readings and lexical neutral tones. This is deliberately bounded;
     // a global character replacement would incorrectly flatten polyphonic words.
     private static let readings: [String: String] = [
+        "晚上":"wǎn shàng", "行李":"xíng lǐ",
         "一月":"yī yuè", "十一月":"shí yī yuè", "星期一":"xīng qī yī",
         "周一":"zhōu yī", "週一":"zhōu yī", "礼拜一":"lǐ bài yī", "禮拜一":"lǐ bài yī",
         "银行":"yín háng", "行长":"háng zhǎng", "音乐":"yīn yuè", "快乐":"kuài lè", "重庆":"chóng qìng",

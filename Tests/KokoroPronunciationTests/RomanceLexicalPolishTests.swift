@@ -4,6 +4,14 @@ import Testing
 @testable import KokoroPronunciation
 
 struct RomanceLexicalPolishTests {
+    @Test(arguments: ["aujourd'hui", "aujourd’hui"])
+    func frenchInternalApostropheRetainsWholeWord(_ word: String) throws {
+        let result = try PronunciationEngine().phonemize(word, language: .french,
+            options: .init(mixedLanguage: .disabled))
+        #expect(result.phonemes.replacingOccurrences(of: "ˈ", with: "") == "oʒuʁdɥi")
+        #expect(!result.diagnostics.contains { $0.code == .unsupportedSymbol })
+    }
+
     @Test func frenchNamesRetainCaseDistinction() {
         let p = FrenchPhonemizer()
         #expect(p.phonemize("Jean et Jeanne!") == "ʒɑ̃ e ˈʒan!")

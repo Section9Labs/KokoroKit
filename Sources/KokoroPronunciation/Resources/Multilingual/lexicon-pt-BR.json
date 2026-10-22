@@ -1,0 +1,65 @@
+{
+  "profile": "pt-BR",
+  "source": {
+    "url": "https://kaikki.org/dictionary/Portuguese/kaikki.org-dictionary-Portuguese.jsonl",
+    "headers": {
+      "Last-Modified": "Wed, 21 Oct 2026 13:43:26 GMT",
+      "ETag": "\"6ad8c17e-245dab3c\"",
+      "Content-Length": "610118460"
+    },
+    "sha256": "1e5e5b53224a05d92383bb26a5d6b278db48c6f477cf7f088c2242c8189baf17",
+    "bytes": 610118460,
+    "source_rows": 447028,
+    "pronunciation_rows": 78698,
+    "extraction": "Kaikki.org English Wiktionary, website snapshot 2026-10-03 / dump 2026-09-02",
+    "license": "CC-BY-SA-4.0",
+    "authors": "Wiktionary contributors; extraction by Tatu Ylonen / Wiktextract / Kaikki.org",
+    "retained_sha256": "4d2e1c1087ba4cedaf9443cb35fd30da49f19394ab07b25b144b611c67ebe81a"
+  },
+  "source_pronunciation_rows": 78698,
+  "ambiguous_keys_excluded": 14765,
+  "distinct_written_forms": 37425,
+  "proper_case_forms": 3001,
+  "primary_stress_readings": 37355,
+  "supplemental_sources": [
+    {
+      "source": {
+        "url": "https://kaikki.org/dictionary/downloads/pt/pt-extract.jsonl.gz",
+        "sha256": "66d0935efb1e67b2017a0667f4df3b456f4d3a43877bd2edbbfd0d0866e9fc28",
+        "source_rows": 628374,
+        "pronunciation_rows": 20747,
+        "license": "CC-BY-SA-4.0",
+        "retained_sha256": "ccb8d972b7e83a7e9207248c8eff9242401975bdaf49a4e41c57b2f215a4788b",
+        "authors": "pt.wiktionary.org contributors; Kaikki.org / Wiktextract"
+      },
+      "added_forms": 1084,
+      "counts": {
+        "source_pronunciation_rows": 20747,
+        "ambiguous_keys_excluded": 193,
+        "distinct_written_forms": 2998,
+        "proper_case_forms": 208,
+        "primary_stress_readings": 2974
+      },
+      "rejected_rows": {
+        "unrepresentable_or_unstressed_reading": 4436,
+        "non_single_word": 629
+      }
+    }
+  ],
+  "rejected_rows": {
+    "non_single_word": 5544,
+    "unrepresentable_or_unstressed_reading": 22387
+  },
+  "license": "CC-BY-SA-4.0",
+  "transformation": "NFC exact words; broad IPA only; profile-ranked readings; ambiguous ties excluded; syllable dots removed; affricates canonicalized; stress retained. Code and data licenses are separate.",
+  "files": {
+    "lexicon-pt-BR.idx": {
+      "bytes": 299416,
+      "sha256": "9994c4d0c6f3c31158301159402a26e7d4a322afc0b28d33ac5006a72365f690"
+    },
+    "lexicon-pt-BR.dat": {
+      "bytes": 784131,
+      "sha256": "a04c7494e87df93aa87a97a072abf037274e7ee77efe88fdeed5c8ac30a78c4f"
+    }
+  }
+}
