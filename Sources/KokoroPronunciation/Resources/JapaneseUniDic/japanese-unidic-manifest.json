@@ -1,0 +1,31 @@
+{
+  "format": "JPKANA01; 16-byte <8sII header; sorted 8-byte <IHH records; UTF-8 key+reading payload",
+  "source_tsv_sha256": "9339195a402fe937e0d94840e9a2eaec4f6ce08c57eede46f55a7c5edd5a3279",
+  "source_archive_sha256": "6cce98269214ce7de6159f61a25ffc5b436375c098cc86d6aa98c0605cbf90d4",
+  "license": "UniDic BSD-3-Clause; copyright 2011-2013 UniDic Consortium",
+  "source_version": "2.1.2",
+  "counts": {
+    "source_forms": 544083,
+    "excluded_no_han": 163492,
+    "excluded_numeric": 6601,
+    "runtime_entries": 373990
+  },
+  "normalization": "NFC only",
+  "excluded_numerals": "〇一七万三九二五億兆八六十千卅卌参參四壱壹廿弐拾百萬貳零",
+  "artifacts": {
+    "japanese-unidic.idx": {
+      "bytes": 2991936,
+      "sha256": "198c6d035c15fee08d99a0135b746b16cd3877e0e7fba56a1687bf172be159f8"
+    },
+    "japanese-unidic.dat": {
+      "bytes": 9426270,
+      "sha256": "6a2010449a7a18f4d714fc193bc5fb2df797e1701a4c5be159cf352229707028"
+    }
+  },
+  "policy": "Authored exceptions first; exact complete Apple-token lookup only; no numeric or kana-only surface; no bulk-driven merging",
+  "limitations": [
+    "Unambiguous in this source is not universally context-correct",
+    "Includes inflected surface forms, not unique lemmas",
+    "No pitch accent or native listening acceptance"
+  ]
+}

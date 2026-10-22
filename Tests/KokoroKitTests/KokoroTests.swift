@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Section9Labs and contributors
 import Foundation
 import Testing
-@testable import KokoroKit
+@testable import LibroxTTS
 import KokoroCatalog
 
 @Test func completeCatalogMatchesPinnedAssets() throws {

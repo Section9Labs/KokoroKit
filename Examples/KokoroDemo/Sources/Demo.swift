@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // Copyright (c) 2026 Section9Labs and contributors
 import AVFoundation
-import KokoroKit
+import LibroxTTS
 import SwiftUI
 
 @main struct KokoroDemo: App {
@@ -60,7 +60,7 @@ struct DemoView: View {
                 Text(status).font(.footnote)
             }
             .disabled(busy)
-            .navigationTitle("KokoroKit")
+            .navigationTitle("LibroxTTS")
         }
     }
     private func perform(_ operation: @escaping @MainActor () async throws -> Void) {

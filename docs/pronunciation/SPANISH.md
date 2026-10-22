@@ -12,7 +12,7 @@ This implementation and its expected tests were written independently from gener
 2. Resolve spelling context before counting vowel nuclei: silent `h`, silent `u` in `que/qui/gue/gui`, pronounced `ü`, soft `c/g`, `ch`, `ñ`, `ll`, `r/rr`, final vocalic `y`, and regular `x`. The Latin American profile maps `ce/ci/z` to `s`; the Spain profile maps them to `θ`. Both choose yeísmo (`ll` and consonantal `y` → `ʝ`). These two labels do not describe every variety spoken within their geographic regions.
 3. Form vowel nuclei from adjacent pronounced vowels. Open-vowel pairs and repeated vowels separate; an accented closed vowel beside an open vowel creates hiatus. Two distinct closed vowels form a diphthong. A triphthong has an open middle vowel and two unstressed closed outer vowels. Silent `h` does not interrupt this process. Resolve the nucleus to the accented vowel, otherwise the open vowel, otherwise the second closed vowel. Non-nuclear `i/u` use `j/w`, including falling glides.
 4. Apply written accent first. Without one, select the penultimate nucleus for vowel endings or vowel-plus-`n/s`, and the final nucleus otherwise. Final written `y` is a consonant for this rule. Consonant-plus-`s` therefore does not accidentally select penultimate stress. Locate the stressed syllable onset using legal Spanish onset clusters. The broad Latin American profile permits `tl` as an onset; the Spain profile splits it.
-5. Suppress stress on a finite grammatical-class list when a word has a neighbor across horizontal whitespace. This includes articles, clitic pronouns, possessive forms, common prepositions and conjunctions. Written accented forms remain distinct (`mi`/`mí`, `el`/`él`, `que`/`qué`). Isolated function words receive their citation-form stress. This is a contextual heuristic, not a syntactic parser.
+5. Suppress stress on a finite grammatical-class list when a word has a neighbor across horizontal whitespace. This includes articles, clitic pronouns, possessive forms, common prepositions and conjunctions, including temporal `cuando` and literary adversative `mas`. Written accented forms remain distinct (`mi`/`mí`, `el`/`él`, `que`/`qué`, `cuando`/`cuándo`, `mas`/`más`). Isolated function words receive their citation-form stress. This is a contextual heuristic, not a syntactic parser.
 6. Apply `b/d/g` allophones across horizontal word boundaries. A pause or preceding nasal preserves a stop; `d` also stays a stop after `l`; other contexts use `β/ð/ɣ`. A punctuation mark or line break resets the context. Within a word, `n` assimilates before labials and velars.
 
 The string uses `ˈ` at the stressed **syllable onset**, including monosyllables. It uses `ʧ` for the affricate, `r` for the trill, `ɾ` for the tap, and `β/ð/ɣ` without narrow-transcription lowering diacritics. It does not insert syllable separators. Representative independently derived results:
@@ -40,7 +40,11 @@ The string uses `ˈ` at the stressed **syllable onset**, including monosyllables
 
 Consulted 2026-10-15. No reference runtime output is a test oracle.
 
+The 2026-10-18 narration audit additionally consulted §3.3.2 of the RAE orthography appendix above for relative/conjunction `cuando` versus interrogative `cuándo`. The former is unstressed in the passage's temporal clause. The change adds that grammatical spelling to the existing contextual rule; it does not use a pronunciation exception for the test passage. Tests preserve direct/indirect interrogatives, isolated citation forms, whitespace, and both dialect profiles. See `Benchmarks/Narration/SPANISH-AUDIT.md` for listening evidence and its limits.
+
 ## Residual limitations
+
+The next narration iteration adds adversative `mas` to that same grammatical class, following [FundéuRAE's mas/más distinction](https://www.fundeu.es/recomendacion/mas-tilde-acento/). Tests cover both dialects, capitalization, accented `más`, citation forms and line boundaries. The laboratory also tests two stresses in `grandemente` and `juiciosamente`, based on [FundéuRAE's description of -mente adverbs](https://www.fundeu.es/recomendacion/adverbios-acabados-en-mente-acentuacion/). That experiment edits only benchmark phonemes; it is not enabled in the library. A suffix-only rule would misclassify verbs such as `comente` and `lamente`, and the model's response to secondary stress still requires listening review.
 
 - This is a deterministic baseline, not a complete pronunciation lexicon. Orthography alone cannot resolve all hiatus choices, loanwords, acronyms, names, or historical `x` pronunciations such as Mexico's place names. Initial `x` defaults to `s`, other `x` to `ks`; `w` defaults to `w`.
 - The two profiles do not model regional aspiration, deletion, rhotic variation, Rioplatense `ll/y`, traditional `ll`/`y` distinction, narrow dentalization, or strengthened palatal allophones.
@@ -52,3 +56,21 @@ Consulted 2026-10-15. No reference runtime output is a test oracle.
 ## Tests
 
 `swift test --filter SpanishTests` covers stress contrasts, silent letters, vowel nuclei, dialect behavior, contextual allophones, sentences, invented unseen words, Unicode equivalence and punctuation. Expected strings were authored directly from the stated rules and linguistic knowledge, without comparing against another phonemizer. A separate temporary Swift package containing only these source/test files also passed all eight test groups on macOS. Audio quality, native-speaker acceptability, and device integration require separate validation.
+
+### Experimental narration stress (not enabled by default)
+
+`PronunciationOptions(spanishAdverbDoubleStress: true)` retains adjective-base
+stress as well as suffix stress in recognized derived `-mente` adverbs. For
+example, `grandemente` and `juiciosamente` previously lost their base stress;
+accented bases such as `fácilmente` instead lost suffix stress. The rule handles
+feminine `-a` bases, invariant `-al`/`-ble` bases, and a conservative set of other invariant adjectives. It is not a
+complete morphological analyzer and does not reinterpret `comente`, `aumente`,
+`demente` or `vehemente` as adverbs. Both tonic syllables are serialized with
+primary stress markers for this listening trial; relative perceived prominence
+is still a model/listening question.
+
+Linguistic basis: [FundéuRAE, adverbios acabados en -mente](https://www.fundeu.es/recomendacion/adverbios-acabados-en-mente-acentuacion/).
+This implementation was independently written from the linguistic rule; no
+external implementation or pronunciation dictionary is incorporated.
+
+The round-11 literary audit also found `maquinalmente` outside the initial base list. Productive `-al`/`-ble` recognition covers it, `principalmente` and `razonablemente`; negative tests retain verb forms such as `alimente`, `incremente`, `experimente` and `lamente`. Still opt-in.

@@ -146,17 +146,68 @@ public final class G2P {
         tagger.string = text
 
         struct Slice {
-            let range: Range<String.Index>
+            var range: Range<String.Index>
             let tag: String
         }
 
         var slices: [Slice] = []
         let options: NLTagger.Options = [.omitWhitespace]
+        var insideSingleQuote = false
+        let apostrophes: Set<Character> = ["'", "‘", "’"]
         tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word, scheme: .nameTypeOrLexicalClass, options: options) { tag, range in
             let tokenText = String(text[range])
+            // NLTagger separates possessives and contractions (animal + 's,
+            // do + n't). Keep the spelling intact before punctuation handling,
+            // which would otherwise discard the apostrophe and spell the suffix.
+            if let previous = slices.last, previous.range.upperBound == range.lowerBound,
+               text[previous.range].last?.isLetter == true {
+                let hasInternalApostrophe = tokenText.contains(where: { apostrophes.contains($0) })
+                    && tokenText.contains(where: \.isLetter)
+                    && tokenText.allSatisfy { $0.isLetter || apostrophes.contains($0) }
+                let isPluralPossessive = tokenText.count == 1
+                    && tokenText.first.map(apostrophes.contains) == true
+                    && text[previous.range].lowercased().hasSuffix("s")
+                    && !insideSingleQuote
+                if hasInternalApostrophe || isPluralPossessive {
+                    slices[slices.count - 1].range = previous.range.lowerBound..<range.upperBound
+                    return true
+                }
+            }
+            if tokenText.count == 1, tokenText.first.map(apostrophes.contains) == true {
+                if tag == .openQuote { insideSingleQuote = true }
+                if tag == .closeQuote { insideSingleQuote = false }
+            }
             slices.append(Slice(range: range, tag: Self.mapTag(tokenText: tokenText, tag: tag)))
             return true
         }
+
+        // NLTagger may split a lexicalized loan compound into word / dash /
+        // word. Preserve its contiguous spelling before dash punctuation is
+        // assigned a pause. This reviewed whole-word entry must not license
+        // a pronunciation for either isolated fragment or a spaced dash.
+        var compoundSlices: [Slice] = []
+        for slice in slices {
+            if compoundSlices.count >= 2 {
+                let left = compoundSlices[compoundSlices.count - 2]
+                let dash = compoundSlices[compoundSlices.count - 1]
+                let combinedRange = left.range.lowerBound..<slice.range.upperBound
+                if left.range.upperBound == dash.range.lowerBound,
+                   dash.range.upperBound == slice.range.lowerBound,
+                   text[dash.range] == "-",
+                   text[combinedRange].lowercased() == "pince-nez",
+                   featureSpans.allSatisfy({ feature in
+                       !feature.range.overlaps(combinedRange)
+                           || (feature.range.lowerBound <= combinedRange.lowerBound
+                               && feature.range.upperBound >= combinedRange.upperBound)
+                   }) {
+                    compoundSlices.removeLast(2)
+                    compoundSlices.append(Slice(range: combinedRange, tag: "NN"))
+                    continue
+                }
+            }
+            compoundSlices.append(slice)
+        }
+        slices = compoundSlices
 
         var tokens: [MToken] = []
         tokens.reserveCapacity(slices.count)
@@ -174,6 +225,8 @@ public final class G2P {
                 )
             )
         }
+
+        Self.resolveReadParticiple(in: tokens)
 
         guard !featureSpans.isEmpty else { return tokens }
 
@@ -204,6 +257,30 @@ public final class G2P {
         }
 
         return tokens
+    }
+
+    // A small grammatical repair, not a general tense/semantic classifier.
+    // Cambridge lists the past participle of read as /red/ in both accents:
+    // https://dictionary.cambridge.org/dictionary/english/read
+    private static func resolveReadParticiple(in tokens: [MToken]) {
+        let auxiliaries: Set<String> = ["have", "has", "had", "be", "been", "being", "is", "are", "was", "were"]
+        let adverbs: Set<String> = ["already", "just", "never", "ever", "not", "yet", "recently", "previously"]
+        for index in tokens.indices where tokens[index].text == "read" && index > 0 {
+            var preceding = index - 1
+            var skipped = 0
+            while true {
+                let separator = tokens[preceding].whitespace
+                guard !separator.isEmpty, separator.allSatisfy({ $0.isWhitespace && !$0.isNewline }) else { break }
+                let word = tokens[preceding].text.lowercased()
+                if auxiliaries.contains(word) {
+                    tokens[index].tag = "VBN"
+                    break
+                }
+                guard adverbs.contains(word), skipped < 2, preceding > 0 else { break }
+                skipped += 1
+                preceding -= 1
+            }
+        }
     }
 
     func foldLeft(_ tokens: [MToken]) -> [MToken] {

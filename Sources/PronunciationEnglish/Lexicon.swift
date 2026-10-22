@@ -149,11 +149,27 @@ public final class Lexicon {
 
     private let golds: [String: LexiconValue]
     private let silvers: [String: String]
+    private let supplement: [String: String]
+    private let reviewedSpellings: Set<String>
 
     public init(british: Bool = false) throws {
         self.british = british
         self.golds = try Self.loadLexicon(named: british ? "gb_gold" : "us_gold", mixed: true)
         self.silvers = try Self.loadLexicon(named: british ? "gb_silver" : "us_silver", mixed: false)
+        // CMUdict is US English. Never substitute its rhotic pronunciations
+        // into the British route; that route has a separately authored name list.
+        let names = try Self.loadSupplement(named: "gb_names", british: true)
+        var base = british ? names : try Self.loadSupplement(named: "us_cmudict", british: false)
+        if !british {
+            let usNames = try Self.loadSupplement(named: "us_names", british: false)
+            base.merge(usNames, uniquingKeysWith: { _, reviewed in reviewed })
+        }
+        let loans = try Self.loadSupplement(named: british ? "gb_loans" : "us_loans", british: british)
+        // A small, explicit list: reviewed names and accented English loans,
+        // never all 69k CMU spellings. Thus CAFÉ is a word but FBI stays letters.
+        self.reviewedSpellings = Set(names.keys.filter { $0.count >= 4 })
+            .union(loans.keys.filter { $0.unicodeScalars.contains { !$0.isASCII } })
+        self.supplement = base.merging(loans, uniquingKeysWith: { _, reviewed in reviewed })
         try Self.validate(golds: golds, british: british)
     }
 
@@ -202,6 +218,26 @@ public final class Lexicon {
         let data = try Data(contentsOf: url)
         let decoded = try JSONDecoder().decode([String: String].self, from: data)
         return growDictionary(decoded)
+    }
+
+    private static func loadSupplement(named name: String, british: Bool) throws -> [String: String] {
+        guard let url = Bundle.module.url(forResource: name, withExtension: "json") else {
+            throw LexiconError.missingResource(name)
+        }
+        let result = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: url))
+        let vocabulary = british ? gbVocab : usVocab
+        for phonemes in result.values where !phonemes.allSatisfy({ vocabulary.contains($0) }) {
+            throw LexiconError.invalidPhoneme(phonemes)
+        }
+        return result
+    }
+
+    private func supplementaryPronunciation(_ word: String) -> String? {
+        // Only reviewed names and accented English loans bypass this rule.
+        // In particular, do not lowercase every CMU entry: FBI and XYZ are
+        // letter sequences, while ANDY and DINAH are ordinary name spellings.
+        guard !isAllUppercase(word) || reviewedSpellings.contains(word.lowercased()) else { return nil }
+        return supplement[word.lowercased()]
     }
 
     private static func growDictionary<T>(_ dictionary: [String: T]) -> [String: T] {
@@ -337,7 +373,7 @@ public final class Lexicon {
     }
 
     public func isKnown(_ word: String, tag: String?) -> Bool {
-        if golds[word] != nil || symbols[word] != nil || silvers[word] != nil {
+        if golds[word] != nil || symbols[word] != nil || silvers[word] != nil || supplementaryPronunciation(word) != nil {
             return true
         }
         if !word.allSatisfy(isLexiconOrdinalCharacter) {
@@ -359,7 +395,7 @@ public final class Lexicon {
 
         if isAllUppercase(lookupWord), golds[lookupWord] == nil {
             lookupWord = lookupWord.lowercased()
-            properNameGuess = tag == "NNP"
+            properNameGuess = tag == "NNP" && !reviewedSpellings.contains(lookupWord)
         }
 
         var phonemes: String?
@@ -385,6 +421,11 @@ public final class Lexicon {
             if phonemes != nil {
                 rating = 3
             }
+        }
+
+        if phonemes == nil, properNameGuess != true {
+            phonemes = supplementaryPronunciation(word)
+            if phonemes != nil { rating = 2 }
         }
 
         if phonemes == nil || (properNameGuess == true && !(phonemes?.contains(primaryStress) ?? false)) {
@@ -504,6 +545,40 @@ public final class Lexicon {
         return (ingSuffix(stemPhonemes), rating)
     }
 
+    // A bounded grade fallback: dictionary membership alone does not establish
+    // that a stem is an adjective (e.g. a name or an acronym ending in -er).
+    // These reviewed regular adjectives have actual US/GB coverage gaps. Keep
+    // gold/silver/supplement entries authoritative, including irregular forms.
+    // See Resources/ENGLISH-REGULAR-INFLECTION-AUDIT.md for evidence and limits.
+    private static let regularComparisonStems: Set<String> = [
+        "cruel", "happy", "lovely", "poor", "sincere", "ugly", "unkind", "unwise"
+    ]
+
+    func stemComparison(_ word: String, stress: Double?, ctx: TokenContext) -> (String?, Int?) {
+        guard word == word.lowercased() || isTitleCaseWord(word),
+              !isAllUppercase(word), word.allSatisfy(isAsciiLetter) else { return (nil, nil) }
+        let lower = word.lowercased()
+        let superlative = lower.hasSuffix("est")
+        guard superlative || lower.hasSuffix("er") else { return (nil, nil) }
+        let base = String(lower.dropLast(superlative ? 3 : 2))
+        var candidates = [base, base + "e"]
+        if base.hasSuffix("i") { candidates.append(String(base.dropLast()) + "y") }
+        guard let stem = candidates.first(where: { Self.regularComparisonStems.contains($0) }),
+              stem != "sincere" || superlative else { return (nil, nil) }
+        let inflectionBase = stem.hasSuffix("e") ? String(stem.dropLast())
+            : stem.hasSuffix("y") ? String(stem.dropLast()) + "i" : stem
+        guard base == inflectionBase,
+              // Use the adjective's existing dialect reading, never letter names.
+              let phonemes = lookup(stem, tag: "JJ", stress: stress, ctx: ctx).0,
+              phonemes.contains(primaryStress) else { return (nil, nil) }
+        // Non-rhotic stems recover linking r before the vowel-initial suffix:
+        // poor -> poorer, sincere -> sincerest. US stems already retain /r/.
+        let linkingR = british && (stem.hasSuffix("r") || stem.hasSuffix("re"))
+            && !phonemes.hasSuffix("ɹ") ? "ɹ" : ""
+        let suffix = superlative ? (british ? "ɪst" : "ᵻst") : (british ? "ə" : "əɹ")
+        return (phonemes + linkingR + suffix, 2)
+    }
+
     func getWord(_ word: String, tag: String?, stress: Double?, ctx: TokenContext) -> (String?, Int?) {
         let (specialCasePhonemes, specialCaseRating) = getSpecialCase(word, tag: tag, stress: stress, ctx: ctx)
         if specialCasePhonemes != nil {
@@ -526,16 +601,27 @@ public final class Lexicon {
             lookupWord = lowercased
         }
 
+        if lookupWord.lowercased().hasSuffix("'s"), golds[lookupWord] == nil, silvers[lookupWord] == nil {
+            let stem = String(lookupWord.dropLast(2))
+            // Malformed chains like x's's's must not recurse with input length.
+            if !stem.lowercased().hasSuffix("'s") {
+                let (phonemes, rating) = getWord(stem, tag: tag, stress: stress, ctx: ctx)
+                if let possessive = pluralSuffix(phonemes) { return (possessive, rating) }
+            }
+        }
+
+        // Resolve CATS' before the generic all-caps initialism fallback.
+        if lookupWord.count > 1, lookupWord.hasSuffix("'"),
+           isKnown(String(lookupWord.dropLast()), tag: tag) {
+            return lookup(String(lookupWord.dropLast()), tag: tag, stress: stress, ctx: ctx)
+        }
+
         if isKnown(lookupWord, tag: tag) {
             return lookup(lookupWord, tag: tag, stress: stress, ctx: ctx)
         }
 
         if lookupWord.hasSuffix("s'"), isKnown(String(lookupWord.dropLast(2)) + "'s", tag: tag) {
             return lookup(String(lookupWord.dropLast(2)) + "'s", tag: tag, stress: stress, ctx: ctx)
-        }
-
-        if lookupWord.hasSuffix("'"), isKnown(String(lookupWord.dropLast()), tag: tag) {
-            return lookup(String(lookupWord.dropLast()), tag: tag, stress: stress, ctx: ctx)
         }
 
         let sResult = stemS(lookupWord, tag: tag, stress: stress, ctx: ctx)
@@ -548,7 +634,7 @@ public final class Lexicon {
         let ingResult = stemING(lookupWord, tag: tag, stress: ingStress, ctx: ctx)
         if ingResult.0 != nil { return ingResult }
 
-        return (nil, nil)
+        return stemComparison(lookupWord, stress: stress, ctx: ctx)
     }
 
     public static func isCurrency(_ word: String) -> Bool {

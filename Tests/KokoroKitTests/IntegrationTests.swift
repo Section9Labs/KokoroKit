@@ -3,7 +3,7 @@
 import Foundation
 import Testing
 import CoreML
-@testable import KokoroKit
+@testable import LibroxTTS
 
 /// Opt in with KOKORO_MODEL_DIRECTORY. Ordinary unit tests do not fetch weights.
 @Test(.enabled(if: ProcessInfo.processInfo.environment["KOKORO_MODEL_DIRECTORY"] != nil))

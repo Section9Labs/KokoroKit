@@ -119,22 +119,7 @@ enum StructuredNumbers {
         }
         text = replace(text, left + "(" + allowed + #")\s*("# + numeric + ")" + right) { g in money(g[2],g[1]) ?? g[0] }
         text = replace(text, left + "(" + numeric + #")\s*("# + allowed + ")" + right) { g in money(g[1],g[2]) ?? g[0] }
-        if language == .spanish {
-            text = replace(text, left + "(" + numeric + #")\s+(personas|páginas|horas|semanas|casas|veces)\b"#) { g in
-                var value = TextNormalizer.normalize(g[1], language: language)
-                for word in ["doscientos","trescientos","cuatrocientos","quinientos","seiscientos","setecientos","ochocientos","novecientos"] {
-                    value = value.replacingOccurrences(of: word, with: String(word.dropLast(2)) + "as")
-                }
-                if value.hasSuffix("uno") { value = String(value.dropLast(3)) + "una" }
-                return value + " " + g[2]
-            }
-        }
-        if language == .portuguese {
-            text = replace(text, left + "(" + numeric + #")[ \t]+(pessoas|páginas|horas|semanas|casas|vezes)\b"#) { g in
-                NumberReadings.portugueseFeminine(TextNormalizer.normalize(g[1], language: language)) + " " + g[2]
-            }
-        }
-        return text
+        return NumberReadings.countedNouns(text, language: language)
     }
 
     static func apocopate(_ text: String) -> String {

@@ -4,7 +4,7 @@ import AVFoundation
 import Foundation
 import Testing
 import KokoroPronunciation
-@testable import KokoroKit
+@testable import LibroxTTS
 
 @Test func decoderManifestRejectsWrongLimitsAndTraversal() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -94,4 +94,25 @@ private func integratedFootprint() -> UInt64 {
         p.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { task_info(mach_task_self_,task_flavor_t(TASK_VM_INFO),$0,&count) }
     }
     return status == KERN_SUCCESS ? info.phys_footprint : 0
+}
+
+/// Exercise the public narration API with actual compact and full-precision
+/// frontends. Model files are explicit opt-in local artifacts, never fetched.
+@Test(.enabled(if: ProcessInfo.processInfo.environment["KOKORO_NARRATION_ASSETS"] != nil))
+func narrationFrontendContracts() async throws {
+    let env = ProcessInfo.processInfo.environment
+    let assets = URL(fileURLWithPath: try #require(env["KOKORO_NARRATION_ASSETS"]))
+    let source = URL(fileURLWithPath: try #require(env["KOKORO_NARRATION_SOURCE"]))
+    let hd = URL(fileURLWithPath: try #require(env["KOKORO_NARRATION_FRONTEND"]))
+    let pronunciation = PronunciationEngine()
+    for frontend in [nil, hd] as [URL?] {
+        let engine = KokoroEngine(modelDirectory: assets, pronunciationPolicy: .independent,
+            rendererPolicy: .fixedSize(directory: assets.appendingPathComponent("decoder")),
+            narration: .init(harmonicSource: source, frontend: frontend))
+        let phonemes = try pronunciation.phonemize("La lluvia cesó. Elena dejó el libro sobre la mesa.", language: .spanish).phonemes
+        let audio = try await engine.synthesizeNarration(phonemes, voiceID: "ef_dora")
+        #expect(audio.duration > 1 && audio.duration < 20)
+        #expect(audio.samples.allSatisfy { $0.isFinite && abs($0) <= 1 })
+        await engine.unload()
+    }
 }

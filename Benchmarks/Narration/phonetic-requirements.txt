@@ -1,0 +1,8 @@
+# Desktop recognition only; not an iPhone dependency.
+torch==2.14.1
+transformers==4.51.3
+huggingface-hub==0.36.2
+numpy==2.4.6
+scipy==1.17.1
+soundfile==0.14.0
+safetensors==0.8.0

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // Copyright (c) 2026 Section9Labs and contributors
 import Testing
-@testable import KokoroKit
+@testable import LibroxTTS
 
 @Test func artificialJoinsRemoveOnlyQuietEdges() {
     let speech = Array(repeating: Float(0.1), count: 2_400)

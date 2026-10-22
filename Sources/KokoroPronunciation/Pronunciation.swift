@@ -15,15 +15,21 @@ public enum PronunciationLanguage: String, CaseIterable, Codable, Sendable {
 public struct PronunciationOptions: Sendable {
     public var britishEnglish: Bool
     public var spanishDialect: SpanishDialect
-    public init(britishEnglish: Bool = false, spanishDialect: SpanishDialect = .spain) {
+    /// Experimental lexical stress for derived Spanish -mente adverbs; off by default.
+    public var spanishAdverbDoubleStress: Bool
+    public var mixedLanguage: MixedLanguageMode
+    public init(britishEnglish: Bool = false, spanishDialect: SpanishDialect = .spain,
+                spanishAdverbDoubleStress: Bool = false, mixedLanguage: MixedLanguageMode = .automatic) {
         self.britishEnglish = britishEnglish
         self.spanishDialect = spanishDialect
+        self.spanishAdverbDoubleStress = spanishAdverbDoubleStress
+        self.mixedLanguage = mixedLanguage
     }
 }
 
 public struct PronunciationDiagnostic: Codable, Sendable, Equatable {
     public enum Code: String, Codable, Sendable {
-        case experimentalLanguage, spelledUnknownWord, approximatedSound, unsupportedSymbol, unexpandedNumber
+        case experimentalLanguage, spelledUnknownWord, approximatedSound, unsupportedSymbol, unexpandedNumber, foreignLanguageApplied
     }
     public let code: Code
     public let detail: String
@@ -36,23 +42,74 @@ public struct PronunciationResult: Codable, Sendable {
     public let rawPhonemes: String
     public let phonemes: String
     public let diagnostics: [PronunciationDiagnostic]
+    public var languageSpans: [PronunciationLanguageSpan]? = nil
 }
 
-public enum PronunciationError: Error, Equatable { case inputTooLong(limit: Int) }
+public enum PronunciationError: Error, Equatable { case inputTooLong(limit: Int), invalidLanguageSpans }
 
 /// Synchronous, actor-owned service. Retains at most one English dictionary variant.
 /// This type deliberately does not claim Sendable: its NLP tagger has mutable state.
 public final class PronunciationEngine {
+    /// Include in prepared-audio cache keys alongside text, voice and options.
+    public static let pipelineRevision = "independent-pronunciation-3"
     public static let maximumInputScalars = 16_384
     private var english: G2P?
     private var british: Bool?
     public init() {}
 
     public func phonemize(_ text: String, language: PronunciationLanguage,
-                          options: PronunciationOptions = .init()) throws -> PronunciationResult {
+                          options: PronunciationOptions = .init(),
+                          languageSpans: [PronunciationLanguageSpan] = []) throws -> PronunciationResult {
         guard text.unicodeScalars.count <= Self.maximumInputScalars else {
             throw PronunciationError.inputTooLong(limit: Self.maximumInputScalars)
         }
+        let spans = try MixedLanguageDetector.spans(in: text, base: language,
+            automatic: options.mixedLanguage == .automatic, hints: languageSpans)
+        guard !spans.isEmpty else { return try singleLanguage(text, language: language, options: options) }
+        let source = text as NSString
+        var parts: [PronunciationResult] = []
+        var runs: [(range: NSRange, language: PronunciationLanguage)] = []
+        var position = 0
+        func collect(_ range: NSRange, _ selectedLanguage: PronunciationLanguage) {
+            guard range.length > 0 else { return }
+            let fragment = source.substring(with: range)
+            if let last = runs.last, NSMaxRange(last.range) == range.location,
+               last.language == selectedLanguage || fragment.allSatisfy(\.isWhitespace) {
+                runs[runs.count - 1].range.length += range.length
+            } else {
+                runs.append((range, selectedLanguage))
+            }
+        }
+        for span in spans {
+            collect(NSRange(location: position, length: span.range.location - position), language)
+            collect(span.range, span.language)
+            position = NSMaxRange(span.range)
+        }
+        collect(NSRange(location: position, length: source.length - position), language)
+        // A hint within the book language must not break phrase-level stress,
+        // liaison or lenition. Coalescing also joins adjacent equal-language hints.
+        for run in runs {
+            let fragment = source.substring(with: run.range)
+            if fragment.allSatisfy(\.isWhitespace) {
+                parts.append(.init(language: run.language, normalizedText: fragment,
+                    rawPhonemes: " ", phonemes: " ", diagnostics: []))
+            } else {
+                parts.append(try singleLanguage(fragment, language: run.language, options: options))
+            }
+        }
+        var result = PronunciationResult(language: language,
+            normalizedText: parts.map(\.normalizedText).joined(separator: " "),
+            rawPhonemes: parts.map(\.rawPhonemes).joined(separator: " "),
+            phonemes: parts.map(\.phonemes).joined(separator: " "),
+            diagnostics: parts.flatMap(\.diagnostics) + spans.filter { $0.language != language }.map {
+                .init(.foreignLanguageApplied, "\($0.language.rawValue) pronunciation at UTF-16 \($0.range.location):\($0.range.length); \($0.origin.rawValue). Narrator unchanged.")
+            })
+        result.languageSpans = spans
+        return result
+    }
+
+    private func singleLanguage(_ text: String, language: PronunciationLanguage,
+                                options: PronunciationOptions) throws -> PronunciationResult {
         let normalized = TextNormalizer.normalize(text, language: language)
         var diagnostics: [PronunciationDiagnostic] = []
         let raw: String
@@ -70,13 +127,23 @@ public final class PronunciationEngine {
                 return token.text.map { g2p(String($0)).phonemes }.filter { !$0.contains("❓") }
                     .joined(separator: " ") + token.whitespace
             }.joined()
-        case .spanish: raw = SpanishPhonemizer().phonemize(normalized, dialect: options.spanishDialect)
+        case .spanish: raw = SpanishPhonemizer().phonemize(normalized, dialect: options.spanishDialect, adverbDoubleStress: options.spanishAdverbDoubleStress)
         case .french: raw = FrenchPhonemizer().phonemize(normalized)
         case .italian: raw = ItalianPhonemizer().phonemize(normalized)
         case .portuguese: raw = PortuguesePhonemizer().phonemize(normalized)
-        case .hindi: raw = HindiPhonemizer().phonemize(normalized)
-        case .japanese: raw = JapanesePhonemizer().phonemize(normalized)
-        case .chinese: raw = ChinesePhonemizer().phonemize(normalized)
+        case .hindi, .japanese, .chinese:
+            func native(_ fragment: String, afterLatin: Bool = false) -> String {
+                switch language {
+                case .hindi: HindiPhonemizer().phonemize(fragment)
+                case .japanese: JapanesePhonemizer().phonemize(fragment, followsLatinWord: afterLatin)
+                case .chinese: ChinesePhonemizer().phonemize(fragment)
+                default: fragment // Enclosing switch restricts this closure to these three languages.
+                }
+            }
+            let result = try ForeignLatinSpelling.phonemize(normalized, language: language,
+                nativeAfterLatin: { native($0, afterLatin: true) }, native: { native($0) })
+            raw = result.phonemes
+            diagnostics += result.diagnostics
         }
         if language != .english {
             diagnostics.append(.init(.experimentalLanguage, "Independent \(language.rawValue) frontend; native listening validation required. See language documentation."))

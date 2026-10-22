@@ -2,13 +2,15 @@
 // Copyright (c) 2026 Section9Labs and contributors
 import Foundation
 
-// Independently authored spelling/context rules. Provenance and deliberate limits: docs/ROMANCE.md.
+// Independently authored spelling/context rules. Provenance: docs/pronunciation/ROMANCE.md
+// and docs/ROMANCE-POLISH-2026-10.md.
 private enum RomanceText {
     static let vowels = Set(Array("aeiouyɑɐɛɔœøəɪʊ"))
     static func vowel(_ c: Character) -> Bool { String(c).decomposedStringWithCanonicalMapping.unicodeScalars.first.map { vowels.contains(Character(String($0))) } ?? false }
-    static func tokens(_ text: String) -> [String] {
+    static func tokens(_ text: String, lowercase: Bool = true) -> [String] {
         var result: [String] = [], word = ""
-        for c in text.precomposedStringWithCanonicalMapping.lowercased() {
+        let normalized = text.precomposedStringWithCanonicalMapping
+        for c in lowercase ? normalized.lowercased() : normalized {
             if c.isLetter { word.append(c) }
             else { if !word.isEmpty { result.append(word); word = "" }; result.append(String(c)) }
         }
@@ -87,17 +89,39 @@ public struct FrenchPhonemizer: Sendable {
     public init() {}
     private static let overrides: [String: String] = ["est":"ɛ", "fils":"fis", "plus":"ply", "tous":"tu", "six":"sis", "dix":"dis", "les":"le", "des":"de", "mes":"me", "tes":"te", "ses":"se", "ces":"se", "un":"œ̃", "et":"e", "le":"lə", "de":"də", "je":"ʒə", "que":"kə", "ne":"nə", "ce":"sə", "se":"sə"]
     private static let liaison: [String: String] = ["les":"z", "des":"z", "mes":"z", "tes":"z", "ses":"z", "ces":"z", "nos":"z", "vos":"z", "leurs":"z", "aux":"z", "deux":"z", "trois":"z", "nous":"z", "vous":"z", "ils":"z", "elles":"z", "on":"n", "un":"n", "en":"n", "dans":"z", "chez":"z", "très":"z", "sans":"z"]
+    // ton/son can also be nouns (un ton aimable, un son étrange). Require a
+    // reviewed nominal complement for those ambiguous possessives; mon is clear.
+    // OQLF: https://vitrinelinguistique.oqlf.gouv.qc.ca/23549/
+    private static let possessiveLiaisonNouns: Set<String> = [
+        "ami", "amie", "amis", "amies", "enfant", "enfants", "épouse", "époux",
+        "histoire", "histoires", "école", "écoles", "ordinateur", "ordinateurs",
+        "ombre", "ombres", "anniversaire", "anniversaires", "adresse", "adresses"
+    ]
     private static let aspiratedH: Set<String> = ["héros","haricot","haricots","honte","haut","haute","hauts","hautes","haine","hasard","hache","haches","hibou","hiboux","hérisson","hérissons","hockey","huit","onze"]
     public func phonemize(_ text: String) -> String {
-        let tokens = RomanceText.tokens(text)
-        var output = tokens.map { RomanceText.isWord($0) ? word($0) : $0 }
+        let written = RomanceText.tokens(text, lowercase: false)
+        let tokens = written.map { $0.lowercased() }
+        var output = tokens.indices.map { i in
+            guard RomanceText.isWord(tokens[i]) else { return tokens[i] }
+            // Preserve the distinction between Jean (name) and jean (fabric).
+            if written[i].first?.isUppercase == true,
+               let name = RomanceLexicon.frenchNames[tokens[i]] { return name }
+            return word(tokens[i])
+        }
+        // A few established loans contain a written hyphen that is not a pause.
+        // Keep ordinary compounds untouched and keep accent on a voiced token.
+        for i in tokens.indices where i + 2 < tokens.count && tokens[i + 1] == "-" {
+            if let compound = RomanceLexicon.frenchCompounds[tokens[i] + "-" + tokens[i + 2]] {
+                output[i] = compound; output[i + 1] = ""; output[i + 2] = ""
+            }
+        }
         let elisions: [String: String] = ["l":"l", "d":"d", "j":"ʒ", "t":"t", "m":"m", "n":"n", "s":"s", "c":"s", "qu":"k", "jusqu":"ʒysk", "lorsqu":"lɔʁsk", "puisqu":"pɥisk"]
         for i in tokens.indices where RomanceText.isWord(tokens[i]) {
             if i + 1 < tokens.count, ["'","’"].contains(tokens[i + 1]), let elided = elisions[tokens[i]] {
                 output[i] = elided; output[i + 1] = ""; continue
             }
             var next = i + 1
-            while next < tokens.count && tokens[next].allSatisfy({ $0.isWhitespace }) { next += 1 }
+            while next < tokens.count && tokens[next].allSatisfy({ $0.isWhitespace && !$0.isNewline }) { next += 1 }
             // Six/dix are /s/ in isolation, /z/ before a counted vowel-initial
             // noun, and have no final consonant before a counted consonant.
             // Restrict to known count nouns: "six arrivent" is a pronoun use.
@@ -112,7 +136,27 @@ public struct FrenchPhonemizer: Sendable {
             }
             if next < tokens.count, next > i + 1, RomanceText.isWord(tokens[next]),
                !Self.aspiratedH.contains(tokens[next]), let first = output[next].first,
-               RomanceText.vowel(first), let sound = Self.liaison[tokens[i]] { output[i] += sound }
+               RomanceText.vowel(first) {
+                if let sound = Self.liaison[tokens[i]] { output[i] += sound }
+                else if tokens[i] == "mon" || (["ton", "son"].contains(tokens[i])
+                    && Self.possessiveLiaisonNouns.contains(tokens[next])) { output[i] += "n" }
+            }
+        }
+        // Written subject inversion supplies an unambiguous liaison context.
+        // Join only these grammatical hyphens; ordinary compounds keep theirs.
+        let invertedSubjects: Set<String> = ["il", "ils", "elle", "elles", "on"]
+        for i in tokens.indices where RomanceText.isWord(tokens[i]) {
+            if i + 2 < tokens.count, tokens[i] == "est", tokens[i + 1] == "-", tokens[i + 2] == "ce" {
+                output[i] = "ɛ"; output[i + 1] = ""; output[i + 2] = "s"
+            } else if i + 2 < tokens.count, tokens[i + 1] == "-",
+               invertedSubjects.contains(tokens[i + 2]),
+               let last = tokens[i].last, ["t", "d"].contains(last) {
+                if !output[i].hasSuffix("t") { output[i] += "t" }
+                output[i + 1] = ""
+            } else if i + 4 < tokens.count, tokens[i + 1] == "-", tokens[i + 2] == "t",
+                      tokens[i + 3] == "-", invertedSubjects.contains(tokens[i + 4]) {
+                output[i + 1] = ""; output[i + 2] = "t"; output[i + 3] = ""
+            }
         }
         // The lexicon marks h aspire with U+02BC. It blocks liaison above but is not a phone.
         output = output.map { $0.replacingOccurrences(of: "ʼ", with: "") }
@@ -126,14 +170,14 @@ public struct FrenchPhonemizer: Sendable {
             lastWord = nil
         }
         for i in tokens.indices {
-            if RomanceText.isWord(tokens[i]) { lastWord = i }
+            if RomanceText.isWord(tokens[i]), output[i].contains(where: RomanceText.vowel) { lastWord = i }
             else if tokens[i].contains(where: { ".,;:!?\n".contains($0) }) { accentLast() }
         }
         accentLast()
         return output.joined()
     }
     private func word(_ word: String) -> String {
-        if let known = Self.overrides[word] ?? FrenchLexicon.lookup(word) { return known }
+        if let known = Self.overrides[word] ?? RomanceLexicon.french[word] ?? FrenchLexicon.lookup(word) { return known }
         let a = Array(word), count = a.count
         var i = 0, out = ""
         func at(_ n: Int) -> Character { n >= 0 && n < count ? a[n] : " " }
@@ -196,31 +240,58 @@ public struct ItalianPhonemizer: Sendable {
         "ciao":"ˈʧao", "grazie":"ˈgrattsje", "buongiorno":"bwɔnˈʤorno", "buonasera":"bwɔnaˈsera", "bene":"ˈbɛne", "bello":"ˈbɛllo", "bella":"ˈbɛlla", "sono":"ˈsono", "essere":"ˈɛssere", "hanno":"ˈanno", "anno":"ˈanno", "ho":"ɔ", "ha":"a", "hai":"ai", "fanno":"ˈfanno", "fatto":"ˈfatto", "detto":"ˈdetto", "oggi":"ˈɔdʤi", "ieri":"ˈjɛri", "domani":"doˈmani", "questo":"ˈkwesto", "quello":"ˈkwello", "qui":"kwi", "qua":"kwa", "come":"ˈkome", "cosa":"ˈkɔza", "dove":"ˈdove", "quando":"ˈkwando", "perché":"perˈke", "anche":"ˈaŋke", "sempre":"ˈsɛmpre", "molto":"ˈmolto", "tutto":"ˈtutto", "più":"pju", "può":"pwɔ", "vuole":"ˈvwɔle", "uomo":"ˈwɔmo", "uomini":"ˈwɔmini", "donna":"ˈdɔnna", "casa":"ˈkaza", "cose":"ˈkɔze", "libro":"ˈlibro", "libri":"ˈlibri", "leggere":"ˈlɛdʤere", "lettera":"ˈlɛttera", "lettere":"ˈlɛttere", "pagina":"ˈpaʤina", "pagine":"ˈpaʤine", "storia":"ˈstɔrja", "storie":"ˈstɔrje", "parola":"paˈrɔla", "parole":"paˈrɔle", "italiano":"itaˈljano", "italiana":"itaˈljana", "italia":"iˈtalja", "musica":"ˈmuzika", "telefono":"teˈlɛfono", "numero":"ˈnumero", "numeri":"ˈnumeri", "tavolo":"ˈtavolo", "albero":"ˈalbero", "alberi":"ˈalberi", "piccolo":"ˈpikkolo", "piccola":"ˈpikkola", "subito":"ˈsubito", "ultimo":"ˈultimo", "ultima":"ˈultima", "facile":"ˈfaʧile", "difficile":"difˈfiʧile", "zucchero":"ˈdzukkero", "zero":"ˈdzɛro", "pizza":"ˈpittsa", "mezzo":"ˈmɛddzo", "mezzi":"ˈmɛddzi", "prezzo":"ˈprɛttso", "tempo":"ˈtɛmpo", "vento":"ˈvɛnto", "sole":"ˈsole", "acqua":"ˈakkwa", "occhio":"ˈɔkkjo", "occhi":"ˈɔkki", "figlio":"ˈfiʎʎo", "figlia":"ˈfiʎʎa", "famiglia":"faˈmiʎʎa", "sogno":"ˈsoɲɲo", "scienza":"ˈʃɛntsa", "scienze":"ˈʃɛntse", "coscienza":"koʃˈʃɛntsa", "cielo":"ˈʧɛlo", "gelato":"ʤeˈlato", "mangiare":"manˈʤare", "amico":"aˈmiko", "amici":"aˈmiʧi", "amica":"aˈmika", "amore":"aˈmore", "notte":"ˈnɔtte", "giorno":"ˈʤorno", "città":"ʧitˈta", "università":"universiˈta", "libertà":"liberˈta", "lunedì":"luneˈdi", "martedì":"marteˈdi", "mercoledì":"merkoleˈdi", "giovedì":"ʤoveˈdi", "venerdì":"venerˈdi", "sabato":"ˈsabato", "domenica":"doˈmenika"
     ]
     public func phonemize(_ text: String) -> String {
-        RomanceText.tokens(text).map { RomanceText.isWord($0) ? word($0) : (["'","’"].contains($0) ? "" : $0) }.joined()
+        let tokens = RomanceText.tokens(text)
+        var output = tokens.indices.map { i in
+            let token = tokens[i]
+            guard RomanceText.isWord(token) else { return ["'", "’"].contains(token) ? "" : token }
+            if i + 1 < tokens.count, ["'", "’"].contains(tokens[i + 1]) {
+                if token == "po" { return "pɔ" }
+                if i + 2 < tokens.count, RomanceText.isWord(tokens[i + 2]),
+                   let elided = RomanceLexicon.italianElisions[token] { return elided }
+            }
+            return word(token)
+        }
+        // These questions combine an elided interrogative with stressed è.
+        // Word-by-word stress would incorrectly produce DÒV-è / CÒM-è.
+        let copulaElisions = ["dov": "doˈvɛ", "cos": "kɔˈzɛ", "com": "koˈmɛ"]
+        for i in tokens.indices where i + 2 < tokens.count {
+            if ["'", "’"].contains(tokens[i + 1]), tokens[i + 2] == "è",
+               let contracted = copulaElisions[tokens[i]] {
+                output[i] = contracted; output[i + 1] = ""; output[i + 2] = ""
+            }
+        }
+        return output.joined()
     }
     private func word(_ word: String) -> String {
         if let number = Self.numberReadings[word] { return number }
-        if let known = Self.lexicon[word] { return known }
+        if let known = Self.lexicon[word] ?? RomanceLexicon.italian[word] { return known }
         let a = Array(word); var i = 0, out = ""
+        let frontVowels = "eièéì"
         func at(_ p: Int) -> Character { p >= 0 && p < a.count ? a[p] : " " }
         func starts(_ s: String) -> Bool { Array(a.dropFirst(i).prefix(s.count)) == Array(s) }
         while i < a.count {
             let c = a[i], next = at(i+1), previous = at(i-1)
             let medial = "aeiouàèéìòóù".contains(previous)
+            // Final -gli keeps vocalic i after the geminate palatal lateral.
+            // The learned verb sigli retains /gl/; consonant + gli (gangli) is
+            // outside this vowel-preceded rule. Treccani: -gl- [prontuario].
+            if starts("gli"), medial, i + 3 == a.count, word != "sigli" {
+                out += "ʎʎi"; i += 3; continue
+            }
             if starts("gli"), i+3 < a.count, "aeou".contains(at(i+3)) { out += medial ? "ʎʎ" : "ʎ"; i += 3; continue }
             if starts("gn") { out += medial ? "ɲɲ" : "ɲ"; i += 2; continue }
-            if starts("sc"), "ei".contains(at(i+2)) {
+            if starts("sc"), frontVowels.contains(at(i+2)) {
                 out += medial ? "ʃʃ" : "ʃ"; i += 2
                 if at(i) == "i", "aeou".contains(at(i+1)) { i += 1 }
                 continue
             }
             if starts("ch") || starts("gh") { out += c == "c" ? "k" : "g"; i += 2; continue }
-            if (c == "c" || c == "g"), "ei".contains(next) {
+            if (c == "c" || c == "g"), frontVowels.contains(next) {
                 out += c == "c" ? "ʧ" : "ʤ"; i += 1
                 if next == "i", "aeou".contains(at(i+1)) { i += 1 }
                 continue
             }
-            if (c == "c" || c == "g"), next == c, "ei".contains(at(i+2)) {
+            if (c == "c" || c == "g"), next == c, frontVowels.contains(at(i+2)) {
                 out += c == "c" ? "tʧ" : "dʤ"; i += 2
                 if at(i) == "i", "aeou".contains(at(i+1)) { i += 1 }
                 continue
@@ -238,11 +309,14 @@ public struct ItalianPhonemizer: Sendable {
             case "h": break
             case "i": out += "aeou".contains(next) ? "j" : "i"
             case "u": out += "aeio".contains(next) && "qg".contains(previous) ? "w" : "u"
-            case "s": out += medial && "aeiou".contains(next) ? "z" : "s"
+            case "s":
+                // Regressive voicing before a voiced consonant, not /j w/:
+                // Treccani, sonorizzazione (sbaglio, sdentato, slegare).
+                out += ("bdgvlmnr".contains(next) || (medial && "aeiou".contains(next))) ? "z" : "s"
             case "z":
                 if next == "z" { out += "tts"; i += 1 }
                 else { out += medial ? "tts" : "ts" }
-            case "n": out += "cgkq".contains(next) && !"ei".contains(at(i+2)) ? "ŋ" : "n"
+            case "n": out += "cgkq".contains(next) && !frontVowels.contains(at(i+2)) ? "ŋ" : "n"
             case "x": out += "ks"
             case "y": out += "i"
             case "j": out += "j"
@@ -264,7 +338,7 @@ public struct PortuguesePhonemizer: Sendable {
         RomanceText.tokens(text).map { RomanceText.isWord($0) ? word($0) : (["'","’"].contains($0) ? "" : $0) }.joined()
     }
     private func word(_ word: String) -> String {
-        if let known = Self.lexicon[word] { return known }
+        if let known = Self.lexicon[word] ?? RomanceLexicon.portuguese[word] { return known }
         let a = Array(word); var i = 0, out = ""
         let vowels = "aeiouáâãàéêíóôõúü"
         func at(_ p: Int) -> Character { p >= 0 && p < a.count ? a[p] : " " }
@@ -276,7 +350,13 @@ public struct PortuguesePhonemizer: Sendable {
             for (spelling, ipa) in [("nh","ɲ"),("lh","ʎ"),("ch","ʃ"),("rr","h"),("ss","s"),("ão","ɐ̃w̃"),("ãe","ɐ̃j̃"),("õe","õj̃")] where starts(spelling) { out += ipa; i += spelling.count; matched = true; break }
             if matched { continue }
             if (c == "q" || c == "g"), next == "u", "eiéêí".contains(at(i+2)) { out += c == "q" ? "k" : "g"; i += 2; continue }
-            if c == "e", next == "m", i+2 == a.count || (i+3 == a.count && at(i+2) == "s") { out += "ẽj̃"; i += 2; continue }
+            if c == "e" || c == "é", (next == "m" && i + 2 == a.count)
+                || (["m", "n"].contains(next) && i + 3 == a.count && at(i + 2) == "s") {
+                out += c == "é" ? "ˈẽj̃" : "ẽj̃"; i += 2; continue
+            }
+            // In this alveolar-coda Brazilian convention, soft xc is /s/,
+            // while the x of initial exp-/ext-/exc- is a coda /s/.
+            if starts("xc"), "eiéêí".contains(at(i + 2)) { out += "s"; i += 2; continue }
             if c == "a", next == "m", i+2 == a.count { out += "ɐ̃w̃"; i += 2; continue }
             if vowels.contains(c) {
                 let accented = "áâéêíóôú".contains(c)
@@ -300,7 +380,11 @@ public struct PortuguesePhonemizer: Sendable {
                 if nasal {
                     v = ["a":"ɐ̃","ɐ":"ɐ̃","ɛ":"ẽ","e":"ẽ","i":"ĩ","ɔ":"õ","o":"õ","u":"ũ"][v] ?? v
                     i += 1
-                } else if !accented && (c == "i" || c == "u") && vowels.contains(previous) {
+                } else if !accented && (c == "i" || c == "u") && vowels.contains(previous)
+                            && !(next == "n" && at(i + 2) == "h")
+                            // Final -iu has a tonic /i/ nucleus: saiu, caiu,
+                            // atraiu. Turning both i and u into glides loses it.
+                            && !(c == "i" && next == "u" && i + 2 == a.count) {
                     v = c == "i" ? "j" : "w"
                 } else if c == "u", "qg".contains(previous), vowels.contains(next) { v = "w" }
                 out += (accented ? "ˈ" : "") + v
@@ -320,7 +404,10 @@ public struct PortuguesePhonemizer: Sendable {
             case "l": out += vowels.contains(next) ? "l" : "w"
             case "s": out += vowels.contains(previous) && vowels.contains(next) ? "z" : ("bdgvjmnlr".contains(next) ? "z" : "s")
             case "z": out += isFinal ? "s" : "z"
-            case "x": out += i == 1 && previous == "e" && vowels.contains(next) ? "z" : "ʃ"
+            case "x":
+                if i == 1 && previous == "e" && vowels.contains(next) { out += "z" }
+                else if i == 1 && previous == "e" && "ptc".contains(next) { out += "s" }
+                else { out += "ʃ" }
             case "y": out += "i"
             case "w": out += "w"
             default: out.append(c)

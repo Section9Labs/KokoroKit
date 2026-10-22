@@ -85,6 +85,40 @@ struct SpanishTests {
         #expect(spanish.phonemize("¡La cigüeña llegó!", dialect: .latinAmerica) == "¡la siˈɣweɲa ʝeˈɣo!")
     }
 
+    @Test func temporalCuandoDiffersFromInterrogativeCuando() {
+        // RAE, Diccionario del estudiante, Ortografía §3.3.2. Authored from the
+        // grammatical distinction, not another phonemizer's output.
+        for dialect in [SpanishDialect.spain, .latinAmerica] {
+            #expect(spanish.phonemize("cuando Elena regresó", dialect: dialect) == "kwando eˈlena reɣɾeˈso")
+            #expect(spanish.phonemize("¿Cuándo regresó Elena?", dialect: dialect) == "¿ˈkwando reɣɾeˈso eˈlena?")
+            #expect(spanish.phonemize("No sé cuándo regresó.", dialect: dialect) == "ˈno ˈse ˈkwando reɣɾeˈso.")
+            #expect(spanish.phonemize("CUANDO\tELENA", dialect: dialect) == "kwando\teˈlena")
+        }
+        #expect(spanish.phonemize("cuando") == "ˈkwando")
+        #expect(spanish.phonemize("«cuando»") == "«ˈkwando»")
+        #expect(spanish.phonemize("cuando\nElena") == "ˈkwando\neˈlena")
+    }
+
+    @Test(arguments: [SpanishDialect.spain, .latinAmerica])
+    func literaryMasDiffersFromTonicMas(dialect: SpanishDialect) {
+        #expect(spanish.phonemize("Mas ella vino.", dialect: dialect) == "mas ˈeʝa ˈβino.")
+        #expect(spanish.phonemize("más libros", dialect: dialect) == "ˈmas ˈliβɾos")
+        #expect(spanish.phonemize("MAS\tELENA", dialect: dialect) == "mas\teˈlena")
+        #expect(spanish.phonemize("MÁS\tLIBROS", dialect: dialect) == "ˈmas\tˈliβɾos")
+        // Preserve citation-form stress and do not attach across paragraphs.
+        #expect(spanish.phonemize("mas", dialect: dialect) == "ˈmas")
+        #expect(spanish.phonemize("«mas»", dialect: dialect) == "«ˈmas»")
+        #expect(spanish.phonemize("mas\nElena", dialect: dialect) == "ˈmas\neˈlena")
+    }
+
+    @Test func narrationPreservesHiatusAndContentWordStress() {
+        #expect(spanish.phonemize("una tabla crujió") == "una ˈtaβla kɾuˈxjo")
+        #expect(spanish.phonemize("de haberlo oído") == "de aˈβeɾlo oˈiðo")
+        #expect(spanish.phonemize("la lluvia borraba") == "la ˈʝuβja βoˈraβa")
+        #expect(spanish.phonemize("la lámpara y esperó") == "la ˈlampaɾa i espeˈɾo")
+        #expect(spanish.phonemize("Esta vez estaba segura") == "ˈesta ˈβeθ esˈtaβa seˈɣuɾa")
+    }
+
     @Test func unseenWordsUseRulesRatherThanAnExceptionList() {
         #expect(spanish.phonemize("tarupino") == "taɾuˈpino")
         #expect(spanish.phonemize("tarupinó") == "taɾupiˈno")
@@ -104,5 +138,35 @@ struct SpanishTests {
         #expect(spanish.phonemize("ø") == "ø")
         #expect(spanish.phonemize("123 + 🙂") == "123 + 🙂")
         #expect(spanish.phonemize("" ).isEmpty)
+    }
+}
+
+@Test func experimentalAdverbsRetainBothLexicalStresses() throws {
+    let p = SpanishPhonemizer()
+    let examples = ["grandemente": "ˈgɾandeˈmente", "juiciosamente": "xwiˈθjosaˈmente",
+                    "fácilmente": "ˈfaθilˈmente", "rápidamente": "ˈrapiðaˈmente",
+                    "felizmente": "feˈliθˈmente"]
+    for (word, expected) in examples {
+        #expect(p.phonemize(word, adverbDoubleStress: true) == expected)
+    }
+    for word in ["mente", "comente", "fomente", "aumente", "demente", "vehemente", "alimento"] {
+        #expect(p.phonemize(word, adverbDoubleStress: true) == p.phonemize(word))
+    }
+    #expect(p.phonemize("grandemente") == "gɾandeˈmente")
+    let result = try PronunciationEngine().phonemize("grandemente", language: .spanish,
+        options: .init(spanishAdverbDoubleStress: true))
+    #expect(result.phonemes == "ɡɾˈandemˈente")
+    #expect(!result.diagnostics.contains { $0.code == .unsupportedSymbol })
+}
+
+@Test func literaryAdverbsKeepStressOfProductiveInvariantAdjectives() throws {
+    let p = SpanishPhonemizer()
+    let cases = ["maquinalmente": "makiˈnalˈmente", "principalmente": "pɾinθiˈpalˈmente",
+                 "razonablemente": "raθoˈnaβleˈmente", "cortésmente": "koɾˈtesˈmente"]
+    for (word, expected) in cases {
+        #expect(p.phonemize(word, adverbDoubleStress: true) == expected)
+    }
+    for word in ["alimente", "incremente", "experimente", "documente", "ornamente", "lamente", "fundamente", "reglamente", "juramente", "parlamente"] {
+        #expect(p.phonemize(word, adverbDoubleStress: true) == p.phonemize(word))
     }
 }

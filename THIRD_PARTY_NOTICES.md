@@ -9,13 +9,14 @@ Original Section9Labs contributions: **Apache-2.0 OR MIT**. Upstream components 
 | `Sources/KokoroKit/Resources/dict_*.json` | speech-swift dictionary distribution; Apache-2.0 and preserved ipa-dict MIT attribution |
 | `Sources/KokoroPronunciation/Resources/Romance/**` | ipa-dict French data, MIT with the documented provenance limitation |
 | `Sources/KokoroKit/Resources/vocab.json`, `Scripts/ModelExport/backend.py` | Apache-2.0, Kokoro |
+| `Benchmarks/Narration/vendor/**`, `Benchmarks/Narration/frontend.py` | Apache-2.0, Jud/kokoro-coreml and hexgrad/kokoro benchmark adapters; see vendor README |
 | `Licenses/**`, notices and quoted license text | Original upstream terms and ownership |
 | Downloaded weights and voice embeddings | Separate Apache-2.0 model distribution; not covered by our MIT option |
 | Other original code, tests and documentation | Apache-2.0 OR MIT |
 
 # Third-party notices
 
-KokoroKit is an independent integration. It does not claim authorship of the original models, dictionaries, or phonemization algorithms, or endorsement by their authors.
+LibroxTTS is an independent integration. It does not claim authorship of the original models, dictionaries, or phonemization algorithms, or endorsement by their authors.
 
 ## Code and dictionary sources
 
@@ -83,3 +84,129 @@ The model-alphabet adapter targets Kokoro v1.0, an Apache-2.0 model by hexgrad/r
 The parent repository's B/C reference experiments use Python Misaki and eSpeak NG. Those are development reference tools outside this package, not linked dependencies or bundled resources. Their licenses remain applicable to their distribution. Do not bundle those environments into a release of this library. No reference-generated pronunciation dictionary is shipped.
 
 The engineering distinction follows the Copyright Office's discussion of functionality versus expression ([Circular 61](https://www.copyright.gov/circs/circ61.pdf)); translated GPL code remains a modification under the [GNU GPL FAQ](https://www.gnu.org/licenses/gpl-faq.en.html#TranslateCode). These references explain the chosen provenance process, not a project-specific legal opinion.
+
+## Narration laboratory helpers
+
+The optional larger-model narration experiments use Qwen3-TTS-12Hz-1.7B-VoiceDesign
+weights (Apache-2.0) through MLX Community BF16 revision
+`7d3824abff87e49756bb0f83fb5411de75d160c4` and 8-bit revision
+`f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee`. Upstream:
+https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign . The local Python
+runner uses mlx-audio (MIT), not vendored into the Swift targets. Free
+transcription checks use Whisper large-v3-turbo (MIT) via the MLX Community
+conversion `a4aaeec0636e6fef84abdcbe3544cb2bf7e9f6fb` and mlx-whisper (MIT).
+These downloads remain external; our package license does not replace their
+licenses. Runtime versions and weight hashes are recorded with benchmark results.
+No larger-model output has been used to train or distill the shipped model.
+
+The reference-anchored narration experiment additionally uses
+`mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit`, revision
+`e7dd0585652209fa0d7783659aad4e8a324de11c`, converted from
+https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base (Apache-2.0).
+Its reference voices are generated with the VoiceDesign checkpoint above,
+using locally authored calibration sentences. No person's recording is used.
+Weights and complete checkpoint notices remain in the external model cache;
+this research runner does not bundle or redistribute them.
+
+The round-three reference comparison also conditions Base on locally synthesized
+Kokoro `ef_dora` audio. This is model-generated reference audio, not a human
+recording. The optional `Benchmarks/Narration/harmonic_source.py` research export
+adapts the Apache-2.0 Kokoro `SineGen`/`SourceModuleHnNSF` equations and the
+attributed STFT helper below. Its code is Apache-2.0, not independently authored
+pronunciation logic; the trained linear weights retain the Kokoro model terms.
+
+The literary test texts are excerpts of Lewis Carroll's *Alice's Adventures in
+Wonderland* (ebook 11) and Benito Pérez Galdós's *Tormento* (ebook 31465), listed
+as public domain in the USA by Project Gutenberg. Exact source URLs, source
+hashes and excerpt boundaries accompany the corpus. Narration is synthesized;
+no human narrator recording is included. Project Gutenberg's surrounding
+boilerplate and trademarks are not claimed as newly authored package content.
+
+The optional local phonetic audit downloads two speech-recognition checkpoints outside the Swift package: [Cnam-LMSSC/wav2vec2-spanish-phonemizer](https://huggingface.co/Cnam-LMSSC/wav2vec2-spanish-phonemizer/tree/6e8a11b261acab0fb6ab6258b7082a2e88b4ed36), declared MIT, and [facebook/wav2vec2-xlsr-53-espeak-cv-ft](https://huggingface.co/facebook/wav2vec2-xlsr-53-espeak-cv-ft/tree/2c733782da5604684829819a5eb744c193fe9398), declared Apache-2.0. Neither checkpoint nor its training data is redistributed or used to generate a library dictionary. The recognizers run on waveform samples only; no eSpeak executable or text phonemizer is called by the audit. The checkpoint names and output conventions do not establish error-free phonetic ground truth. See `Benchmarks/Narration/PHONETIC-AUDIT.md` for exact scope, provenance, controls and limitations.
+
+`Benchmarks/Narration/vendor/{export_coreml,coreml_ops,reference}.py` are unmodified Apache-2.0 helpers from Jud/kokoro-coreml revision `6bfc02afb237a311caee927482e58c028edb6acb`. `frontend.py` adapts the Kokoro acoustic forward and those length-aware wrappers to export acoustic outputs without harmonic generation. The local converter adapter preserves PyTorch integer `rsqrt` promotion. These benchmark-only files are excluded from all Swift targets. See `Licenses/kokoro-coreml-LICENSE`, the original model notices above, and `Benchmarks/Narration/README.md`.
+
+The medium-device harness uses `mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit`,
+revision `50f45ef0047cde7e84c2ef04326acb8ada2436a7`, converted from Qwen's
+Apache-2.0 Base model. Its native runtime is `Blaizzy/mlx-audio-swift` (MIT),
+revision `d302a5c6080d2bb97bae38c7418f82abb76013b6`, with MLX Swift 0.31.6
+(MIT). These are dependencies of the standalone benchmark app, not the library.
+The model manifest records byte counts and hashes; no weights, generated audio,
+signing keys, device reports or provisioning profiles are committed.
+
+
+## CMUdict English supplement
+
+`Sources/PronunciationEnglish/Resources/us_cmudict.json` derives from the Carnegie Mellon Pronouncing Dictionary, revision `74790861f652b15e4ac49015a90074ad62a27690` at https://github.com/cmusphinx/cmudict. It adds 69,043 US fallback spellings; existing contextual dictionaries retain priority. The independently authored British name supplement is not derived from CMUdict.
+
+CMUdict retains its own redistribution terms, reproduced below, rather than our Apache-2.0 OR MIT choice. The deterministic importer and exact source/output checksums are documented in `Sources/PronunciationEnglish/Resources/CMUdict/ENGLISH-SUPPLEMENT-NOTICE.md`.
+
+Copyright (C) 1993-2015 Carnegie Mellon University. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+   The contents of this file are deemed to be source code.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in
+   the documentation and/or other materials provided with the
+   distribution.
+
+This work was supported in part by funding from the Defense Advanced
+Research Projects Agency, the Office of Naval Research and the National
+Science Foundation of the United States of America, and by member
+companies of the Carnegie Mellon Sphinx Speech Consortium. We acknowledge
+the contributions of many volunteers to the expansion and improvement of
+this dictionary.
+
+THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+## UniDic Japanese pronunciation data
+
+UniDic 2.1.2, Copyright (c) 2011-2013 The UniDic Consortium, is redistributed under its BSD-3-Clause alternative. This is a filtered, indexed derivative; no endorsement is implied. Source and modifications are documented in the bundled JapaneseUniDic/UNIDIC-NOTICE.txt and UNIDIC-COPYING.txt.
+
+Copyright (c) 2011-2013, The UniDic Consortium
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+ * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the
+   distribution.
+
+ * Neither the name of the UniDic Consortium nor the names of its
+   contributors may be used to endorse or promote products derived
+   from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

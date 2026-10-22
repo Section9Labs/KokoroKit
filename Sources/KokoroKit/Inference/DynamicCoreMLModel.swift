@@ -9,55 +9,80 @@ final class DynamicCoreMLModel {
     private let frontend: MLModel
     private let backend: DecoderBackend
     private let usesFixedDecoder: Bool
+    private let narrationExperiment: Bool
+    private let harmonicSource: ExperimentalHarmonicSource?
     let vocab: [String: Int]
     static let maxPhonemeCount = 510
 
-    init(directory: URL, computeUnits: MLComputeUnits, fixedDecoderDirectory: URL? = nil) throws {
+    init(directory: URL, computeUnits: MLComputeUnits, fixedDecoderDirectory: URL? = nil,
+         harmonicSourceURL: URL? = nil, narrationExperiment: Bool = false, frontendURL: URL? = nil) throws {
+        self.narrationExperiment = narrationExperiment
         guard let url = Bundle.module.url(forResource: "vocab", withExtension: "json") else {
             throw CocoaError(.fileNoSuchFile)
         }
         vocab = try JSONDecoder().decode([String: Int].self, from: Data(contentsOf: url))
         let config = MLModelConfiguration()
         config.computeUnits = .cpuOnly
-        frontend = try MLModel(contentsOf: directory.appendingPathComponent("kokoro_frontend.mlmodelc"), configuration: config)
+        harmonicSource = try harmonicSourceURL.map { try ExperimentalHarmonicSource(url: $0, halfVoicedNoise: narrationExperiment) }
+        frontend = try MLModel(contentsOf: frontendURL ?? directory.appendingPathComponent("kokoro_frontend.mlmodelc"), configuration: config)
         usesFixedDecoder = fixedDecoderDirectory != nil
         backend = try DecoderBackend(directory: directory, computeUnits: computeUnits, fixedDirectory: fixedDecoderDirectory)
     }
 
-    func forward(phonemes: String, refS: MLMultiArray, speed: Float) throws -> SegmentOutput {
+    func forward(phonemes: String, refS: MLMultiArray, speed: Float,
+                 experimentalProsody: ExperimentalProsody = .neutral,
+                 experimentalNoiseSeed: UInt64? = nil) throws -> SegmentOutput {
+        if experimentalNoiseSeed != nil {
+            guard narrationExperiment, harmonicSource != nil else { throw SynthesisError.invalidDecoderAssets }
+        }
         let ids = [0] + phonemes.unicodeScalars.compactMap { vocab[String($0)] } + [0]
         guard ids.count <= Self.maxPhonemeCount + 2 else { throw SynthesisError.segmentTooLong }
         let count = NSNumber(value: ids.count)
         let input = try array([1, count], values: ids.map(Float.init), type: .int32)
         let mask = try array([1, count], values: Array(repeating: 1, count: ids.count), type: .int32)
         let speedInput = try array([1], values: [speed])
-        let phases = try array([1, 9], values: (0..<9).map { _ in Float.random(in: 0..<(2 * .pi)) })
-        let front = try frontend.prediction(from: MLDictionaryFeatureProvider(dictionary: [
-            "input_ids": input, "attention_mask": mask, "ref_s": refS,
-            "speed": speedInput, "random_phases": phases,
-        ]))
+        var inputs: [String: MLMultiArray] = ["input_ids": input, "attention_mask": mask,
+            "ref_s": refS, "speed": speedInput]
+        if frontend.modelDescription.inputDescriptionsByName["random_phases"] != nil {
+            let phases: [Float]
+            if let seed = experimentalNoiseSeed {
+                var generator = GaussianNoise(seed: seed ^ 0x504841534553)
+                phases = (0..<9).map { _ in Float(generator.uniform() * 2 * Double.pi) }
+            } else {
+                phases = (0..<9).map { _ in Float.random(in: 0..<(2 * .pi)) }
+            }
+            inputs["random_phases"] = try array([1, 9], values: phases)
+        }
+        let front = try frontend.prediction(from: MLDictionaryFeatureProvider(dictionary: inputs))
         try Task.checkCancellation()
-        guard let lengths = front.featureValue(for: "audio_length_samples")?.multiArrayValue,
-              lengths[0].intValue > 0 else { throw SynthesisError.invalidAudio }
-        let valid = lengths[0].intValue
         // Predict pitch, duration and harmonic phase ONCE for the entire input.
         // Window only the decoder, never the linguistic/prosody frontend.
         let style = try array([1, 128], values: (0..<128).map { refS[$0].floatValue })
         var features: [String: MLMultiArray] = [:]
-        for name in ["asr", "F0_pred", "N_pred", "har"] {
-            guard let value = front.featureValue(for: name)?.multiArrayValue else {
-                throw SynthesisError.invalidAudio
-            }
+        for name in ["asr", "F0_pred", "N_pred"] {
+            guard let value = front.featureValue(for: name)?.multiArrayValue else { throw SynthesisError.invalidAudio }
             features[name] = value
         }
         guard let frames = features["asr"]?.shape.last?.intValue,
-              valid == frames * DecoderWindow.samplesPerFrame,
+              (1...4096).contains(frames),
               features["F0_pred"]?.shape.last?.intValue == frames * 2,
-              features["N_pred"]?.shape.last?.intValue == frames * 2,
-              features["har"]?.shape.last?.intValue == frames * 120 + 1 else {
-            throw SynthesisError.invalidAudio
+              features["N_pred"]?.shape.last?.intValue == frames * 2 else { throw SynthesisError.invalidAudio }
+        let valid = frames * DecoderWindow.samplesPerFrame
+        if let lengths = front.featureValue(for: "audio_length_samples")?.multiArrayValue,
+           lengths[0].intValue != valid { throw SynthesisError.invalidAudio }
+        if experimentalProsody != .neutral {
+            guard narrationExperiment, harmonicSource != nil, let pitch = features["F0_pred"] else {
+                throw SynthesisError.invalidDecoderAssets
+            }
+            features["F0_pred"] = try experimentalProsody.adjusted(pitch)
         }
-        let windows = DecoderWindow.plan(totalFrames: frames)
+        if let harmonicSource, let pitch = features["F0_pred"] {
+            features["har"] = try autoreleasepool { try harmonicSource.predict(pitch: pitch, seed: experimentalNoiseSeed) }
+        } else {
+            features["har"] = front.featureValue(for: "har")?.multiArrayValue
+        }
+        guard features["har"]?.shape.last?.intValue == frames * 120 + 1 else { throw SynthesisError.invalidAudio }
+        let windows = DecoderWindow.plan(totalFrames: frames, context: narrationExperiment ? 40 : 20, blend: narrationExperiment ? 2400 : 480)
         var samples: [Float] = []
         samples.reserveCapacity(valid)
         for window in windows {

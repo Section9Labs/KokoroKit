@@ -1,0 +1,61 @@
+[
+  {
+    "phonemes": "rosalˈia, ke en akˈel momˈento pasˈaβa kon un ɡɾˈan xˈaro paɾa ˈiɾ a la koθˈina en bˈuska ðe ˈaɣwa, djˈo un disimulˈaðo ɣˈolpe en el βɾˈaθo ðe su maɾˈiðo. bjˈen entendjˈo βɾˈiŋɡas akˈel mˈuðo leŋɡwˈaxe ke keɾˈia ðeθˈiɾ “nˈo kombˈiðes ˈoj, ˈombɾe”. ",
+    "role": "narration",
+    "styleRow": 158,
+    "text": "Rosalía, que en aquel momento pasaba con un gran jarro para ir a la cocina en busca de agua, dio un disimulado golpe en el brazo de su marido. Bien entendió Bringas aquel mudo lenguaje que quería decir «no convides hoy, hombre».\n\n",
+    "voice": "em_santa"
+  },
+  {
+    "phonemes": "“seɲˈoɾes",
+    "role": "dialogue",
+    "speaker": "c1",
+    "styleRow": 158,
+    "text": "«Señores",
+    "voice": "ef_dora"
+  },
+  {
+    "phonemes": "—dˈixo ampˈaɾo sonrjˈendo—",
+    "role": "narration",
+    "styleRow": 158,
+    "text": "—dijo Amparo sonriendo—",
+    "voice": "em_santa"
+  },
+  {
+    "phonemes": ", apaɾtˈaɾse. bˈoj a ponˈeɾ la mˈesa”.",
+    "role": "dialogue",
+    "speaker": "c1",
+    "styleRow": 158,
+    "text": ", apartarse. Voy a poner la mesa».",
+    "voice": "ef_dora"
+  },
+  {
+    "phonemes": "  i mjˈentɾas ekstendˈia el mantˈel, kaβaʝˈeɾo, miɾˈandola, kontestˈaβa makinˈalmˈente: ",
+    "role": "narration",
+    "styleRow": 158,
+    "text": "\n\nY mientras extendía el mantel, Caballero, mirándola, contestaba maquinalmente:\n\n",
+    "voice": "em_santa"
+  },
+  {
+    "phonemes": "“ˈoj nˈo pwˈeðo. me keðaɾˈe ˈotɾo ðˈia”.",
+    "role": "dialogue",
+    "speaker": "c2",
+    "styleRow": 158,
+    "text": "«Hoy no puedo. Me quedaré otro día».",
+    "voice": "em_alex"
+  },
+  {
+    "phonemes": "  en ˈesto ʝeɣˈaβa al komeðˈoɾ un rumoɾθˈiʝo oɾatˈoɾjo, pɾoθeðˈente ðel immeðjˈato kwˈaɾto en ke enθerˈaðos estˈaβan el estuðjˈoso ˈixo ðe βɾˈiŋɡas i el nˈo mˈenos ðespjˈeɾto nˈiɲo ðe pˈeθ. ",
+    "role": "narration",
+    "styleRow": 158,
+    "text": "\n\nEn esto llegaba al comedor un rumorcillo oratorio, procedente del inmediato cuarto en que encerrados estaban el estudioso hijo de Bringas y el no menos despierto niño de Pez. ",
+    "voice": "em_santa"
+  },
+  {
+    "phonemes": "ˈambos aβˈian pɾinθipjˈaðo la karˈeɾa ðe lˈeʝes, i se aðestɾˈaβan en el puxilˈato ðe la palˈaβɾa, espoleˈaðos ðesðe tˈan tempɾˈana eðˈað poɾ la ambiθjonθˈiʝa pˈuɾamˈente espaɲˈola ðe sˈeɾ notaβiliðˈaðes en el fˈoɾo i en el paɾlamˈento.",
+    "role": "narration",
+    "styleRow": 158,
+    "text": "Ambos habían principiado la carrera de Leyes, y se adestraban en el pugilato de la palabra, espoleados desde tan temprana edad por la ambicioncilla puramente española de ser notabilidades en el Foro y en el Parlamento.",
+    "voice": "em_santa"
+  }
+]
